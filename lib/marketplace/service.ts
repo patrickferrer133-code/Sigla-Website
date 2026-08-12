@@ -4,14 +4,15 @@ import { db } from "@/lib/db/client";
 import { coachProfiles, clientProfiles, users } from "@/lib/db/schema/identity";
 import { packages, engagements, reviews } from "@/lib/db/schema/commerce";
 import { isEligibleForReview } from "@/lib/domain/reviews";
-import type { DiscoverFilters, ApplyToPackageInput, SavePackageInput, SubmitReviewInput } from "./schemas";
+import type { DiscoverFilters, ApplyToPackageInput, SavePackageInput, SubmitReviewInput, SaveCoachProfileInput } from "./schemas";
 
 export type MarketplaceError =
   | { code: "not_found"; resource: string }
   | { code: "already_engaged" }
   | { code: "not_accepting_clients" }
   | { code: "not_eligible" }
-  | { code: "already_reviewed" };
+  | { code: "already_reviewed" }
+  | { code: "handle_taken" };
 export type MarketplaceResult<T> = { ok: true; data: T } | { ok: false; error: MarketplaceError };
 function ok<T>(data: T): MarketplaceResult<T> {
   return { ok: true, data };
@@ -228,6 +229,37 @@ export async function setPackagePublished(coachId: string, packageId: string, is
   if (!existing) return fail({ code: "not_found", resource: "package" });
 
   await db.update(packages).set({ isPublished }).where(eq(packages.id, packageId));
+  return ok(true);
+}
+
+export async function getCoachProfileForOwner(coachId: string) {
+  const [row] = await db.select().from(coachProfiles).where(eq(coachProfiles.id, coachId)).limit(1);
+  return row ?? null;
+}
+
+export async function updateCoachProfile(coachId: string, input: SaveCoachProfileInput): Promise<MarketplaceResult<true>> {
+  const [handleOwner] = await db
+    .select({ id: coachProfiles.id })
+    .from(coachProfiles)
+    .where(eq(coachProfiles.handle, input.handle))
+    .limit(1);
+  if (handleOwner && handleOwner.id !== coachId) return fail({ code: "handle_taken" });
+
+  await db
+    .update(coachProfiles)
+    .set({
+      handle: input.handle,
+      headline: input.headline,
+      bio: input.bio,
+      yearsExperience: input.yearsExperience,
+      specialties: input.specialties,
+      languages: input.languages,
+      coachingMode: input.coachingMode,
+      city: input.city,
+      country: input.country,
+      acceptingClients: input.acceptingClients,
+    })
+    .where(eq(coachProfiles.id, coachId));
   return ok(true);
 }
 

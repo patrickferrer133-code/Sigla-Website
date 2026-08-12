@@ -34,3 +34,30 @@ export const submitReviewSchema = z.object({
   body: z.string().trim().max(2000).optional(),
 });
 export type SubmitReviewInput = z.infer<typeof submitReviewSchema>;
+
+export const saveCoachProfileSchema = z.object({
+  handle: z
+    .string()
+    .trim()
+    .min(3)
+    .max(40)
+    .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, and hyphens only."),
+  headline: z.string().trim().max(160).optional(),
+  bio: z.string().trim().max(4000).optional(),
+  yearsExperience: z.coerce.number().int().min(0).max(60).optional(),
+  specialties: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : [])),
+  languages: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : [])),
+  coachingMode: z.array(z.enum(["online", "in_person", "hybrid"])).default([]),
+  city: z.string().trim().max(100).optional(),
+  country: z.string().trim().max(100).optional(),
+  acceptingClients: z.coerce.boolean().default(false),
+});
+export type SaveCoachProfileInput = z.infer<typeof saveCoachProfileSchema>;

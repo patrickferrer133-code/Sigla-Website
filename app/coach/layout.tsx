@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { href: "/coach/programs", label: "Programs" },
   { href: "/coach/checkins", label: "Check-ins" },
   { href: "/coach/messages", label: "Messages" },
+  { href: "/coach/settings", label: "Settings" },
 ];
 
 export default async function CoachLayout({ children }: { children: React.ReactNode }) {
