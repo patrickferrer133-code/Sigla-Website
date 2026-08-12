@@ -3,7 +3,7 @@ import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { coachProfiles, clientProfiles, users } from "@/lib/db/schema/identity";
 import { packages, engagements } from "@/lib/db/schema/commerce";
-import type { DiscoverFilters, ApplyToPackageInput } from "./schemas";
+import type { DiscoverFilters, ApplyToPackageInput, SavePackageInput } from "./schemas";
 
 export type MarketplaceError =
   | { code: "not_found"; resource: string }
@@ -166,5 +166,61 @@ export async function respondToApplication(
       .set({ status: "ended", endedAt: new Date(), endReason: "declined_application" })
       .where(eq(engagements.id, engagementId));
   }
+  return ok(true);
+}
+
+export async function listPackagesForOwner(coachId: string) {
+  return db.select().from(packages).where(eq(packages.coachId, coachId)).orderBy(packages.sortOrder, packages.createdAt);
+}
+
+export async function createPackage(coachId: string, input: SavePackageInput): Promise<MarketplaceResult<{ packageId: string }>> {
+  const [pkg] = await db
+    .insert(packages)
+    .values({
+      coachId,
+      title: input.title,
+      description: input.description,
+      priceCents: input.priceCents,
+      currency: input.currency,
+      billingPeriod: input.billingPeriod,
+      inclusions: input.inclusions,
+      slotLimit: input.slotLimit,
+    })
+    .returning({ id: packages.id });
+  return ok({ packageId: pkg.id });
+}
+
+export async function updatePackage(coachId: string, packageId: string, input: SavePackageInput): Promise<MarketplaceResult<true>> {
+  const [existing] = await db
+    .select({ id: packages.id })
+    .from(packages)
+    .where(and(eq(packages.id, packageId), eq(packages.coachId, coachId)))
+    .limit(1);
+  if (!existing) return fail({ code: "not_found", resource: "package" });
+
+  await db
+    .update(packages)
+    .set({
+      title: input.title,
+      description: input.description,
+      priceCents: input.priceCents,
+      currency: input.currency,
+      billingPeriod: input.billingPeriod,
+      inclusions: input.inclusions,
+      slotLimit: input.slotLimit,
+    })
+    .where(eq(packages.id, packageId));
+  return ok(true);
+}
+
+export async function setPackagePublished(coachId: string, packageId: string, isPublished: boolean): Promise<MarketplaceResult<true>> {
+  const [existing] = await db
+    .select({ id: packages.id })
+    .from(packages)
+    .where(and(eq(packages.id, packageId), eq(packages.coachId, coachId)))
+    .limit(1);
+  if (!existing) return fail({ code: "not_found", resource: "package" });
+
+  await db.update(packages).set({ isPublished }).where(eq(packages.id, packageId));
   return ok(true);
 }

@@ -12,3 +12,18 @@ export const applyToPackageSchema = z.object({
   packageId: z.string().uuid(),
 });
 export type ApplyToPackageInput = z.infer<typeof applyToPackageSchema>;
+
+export const savePackageSchema = z.object({
+  title: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(2000).optional(),
+  priceCents: z.coerce.number().int().min(0).max(100_000_00),
+  currency: z.string().trim().length(3).default("PHP"),
+  billingPeriod: z.enum(["one_time", "monthly", "quarterly", "per_12_weeks"]),
+  inclusions: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v.split("\n").map((s) => s.trim()).filter(Boolean) : [])),
+  slotLimit: z.coerce.number().int().min(1).max(1000).optional(),
+});
+export type SavePackageInput = z.infer<typeof savePackageSchema>;
