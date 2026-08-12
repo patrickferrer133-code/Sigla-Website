@@ -24,13 +24,24 @@ export default async function CoachClientCheckinsPage({ params }: { params: Prom
   // call site, and bounds every series to the engagement's end date.
   const trendResult = await getTrendSeries(clientId, { role: "coach", coachId });
 
-  const { checkins: checkinList, clientDisplayName } = checkinsResult.data;
+  const { checkins: checkinList, clientDisplayName, edRiskFlagged } = checkinsResult.data;
   const weight = trendResult.ok ? trendResult.data.weight : null;
   const adherence = trendResult.ok ? trendResult.data.adherence : [];
 
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-semibold">{clientDisplayName} — check-ins</h1>
+
+      {edRiskFlagged && (
+        <Card className="mt-4 border-destructive/40 bg-destructive/5">
+          <CardContent className="text-sm">
+            Weight and measurements are paused for this client as part of an in-app safety screen, so you won&apos;t
+            see those numbers here. If you have concerns about their relationship with food, weight, or training,
+            consider referring them to a qualified health professional rather than discussing numbers with them
+            directly.
+          </CardContent>
+        </Card>
+      )}
 
       <div className="mt-6 grid gap-6">
         {weight && (

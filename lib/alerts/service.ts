@@ -48,7 +48,7 @@ export async function getCoachAlertQueue(coachId: string): Promise<AlertQueueIte
   const today = new Date();
   const lookbackStart = new Date(today.getTime() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
 
-  const [sessionRows, logRows, checkinRows, trendRows, goalRows, painRows] = await Promise.all([
+  const [sessionRows, logRows, checkinRows, trendRows, goalRows, painRows, volumeRows] = await Promise.all([
     // Prescribed sessions, via program structure (never from logs — a
     // session never opened has no log row, which would silently undercount).
     db
@@ -85,10 +85,17 @@ export async function getCoachAlertQueue(coachId: string): Promise<AlertQueueIte
       .from(setLogs)
       .innerJoin(sessionLogs, eq(sessionLogs.id, setLogs.sessionLogId))
       .where(and(inArray(sessionLogs.engagementId, engagementIds), eq(setLogs.painReported, true), gte(setLogs.loggedAt, new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)))),
+    // Volume load (sets x reps x load) for the overreaching signal — bucketed
+    // by the session's planned week, same as completed sessions and RPE.
+    db
+      .select({ engagementId: sessionLogs.engagementId, sessionId: sessionLogs.sessionId, reps: setLogs.reps, loadKg: setLogs.loadKg })
+      .from(setLogs)
+      .innerJoin(sessionLogs, eq(sessionLogs.id, setLogs.sessionLogId))
+      .where(and(inArray(sessionLogs.engagementId, engagementIds), gte(setLogs.loggedAt, lookbackStart))),
   ]);
 
   return engagementRows.map((e) => {
-    const alerts = detectClientAlerts(buildAlertInput(e, today, { sessionRows, logRows, checkinRows, trendRows, goalRows, painRows }));
+    const alerts = detectClientAlerts(buildAlertInput(e, today, { sessionRows, logRows, checkinRows, trendRows, goalRows, painRows, volumeRows }));
     return { engagementId: e.id, clientId: e.clientId, clientDisplayName: e.clientDisplayName, alerts };
   });
 }
@@ -100,6 +107,7 @@ interface RawData {
   trendRows: { clientId: string; date: string; bodyweightTrendKg: string | null }[];
   goalRows: { clientId: string; type: string }[];
   painRows: { clientId: string; painScore: number | null; loggedAt: Date | null }[];
+  volumeRows: { engagementId: string | null; sessionId: string | null; reps: number | null; loadKg: string | null }[];
 }
 
 function buildAlertInput(
@@ -169,13 +177,22 @@ function buildAlertInput(
     .filter((p) => p.clientId === engagement.clientId && p.painScore !== null && p.loggedAt !== null)
     .map((p) => ({ painScore: p.painScore as number, daysAgo: (today.getTime() - (p.loggedAt as Date).getTime()) / (24 * 60 * 60 * 1000) }));
 
-  const weeklyVolumeLoadKg: number[] = []; // not computed yet — see follow-up note in the dashboard page
+  const volumeByWeek = new Map<string, number>();
+  for (const row of data.volumeRows) {
+    if (row.engagementId !== engagement.id || !row.sessionId || row.reps === null || row.loadKg === null) continue;
+    const weekOf = sessionIdToWeek.get(row.sessionId);
+    if (!weekOf) continue;
+    volumeByWeek.set(weekOf, (volumeByWeek.get(weekOf) ?? 0) + row.reps * Number(row.loadKg));
+  }
 
-  const weeklyRpeWeeks = [...rpeByWeek.keys()].sort();
+  // Union of weeks with RPE or volume data, so a week missing one signal
+  // doesn't silently misalign the two parallel arrays detectOverreaching expects.
+  const weeklyRpeWeeks = [...new Set([...rpeByWeek.keys(), ...volumeByWeek.keys()])].sort();
   const weeklyAvgSessionRpe = weeklyRpeWeeks.map((w) => {
     const list = rpeByWeek.get(w) ?? [];
-    return list.reduce((a, b) => a + b, 0) / list.length;
+    return list.length > 0 ? list.reduce((a, b) => a + b, 0) / list.length : 0;
   });
+  const weeklyVolumeLoadKg = weeklyRpeWeeks.map((w) => volumeByWeek.get(w) ?? 0);
 
   return {
     weeksSinceEngagementStart: weeksSinceStart,

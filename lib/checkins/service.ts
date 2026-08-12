@@ -102,6 +102,24 @@ async function getClientPrivacyAndTimezone(clientId: string) {
   };
 }
 
+/**
+ * Story 2's opt-in control: a client can choose to see their own weight
+ * trend. This only changes what THEY see on their own dashboard — it never
+ * affects the coach's view, which was never gated by hideWeight in the
+ * first place (docs/06 section 3 scopes this to "the client dashboard").
+ */
+export async function setWeightVisibility(clientId: string, visible: boolean): Promise<CheckinResult<true>> {
+  const [row] = await db.select({ privacyPrefs: clientProfiles.privacyPrefs }).from(clientProfiles).where(eq(clientProfiles.id, clientId)).limit(1);
+  if (!row) return fail({ code: "not_found", resource: "client" });
+
+  await db
+    .update(clientProfiles)
+    .set({ privacyPrefs: { ...row.privacyPrefs, hideWeight: !visible } })
+    .where(eq(clientProfiles.id, clientId));
+
+  return ok(true);
+}
+
 /** Recomputes and persists bodyweight_trend_kg for a span of dates around an edited week. */
 async function recomputeWeightTrend(clientId: string, weekOf: string) {
   const spanStart = addDaysToIsoDate(weekOf, -6);
@@ -429,7 +447,10 @@ export async function getClientCheckinHistory(clientId: string, page = 1): Promi
   return ok({ checkins: summaries, hasMore: rows.length > pageSize });
 }
 
-export async function getCoachClientCheckins(coachId: string, clientId: string): Promise<CheckinResult<{ checkins: CheckinSummary[]; clientDisplayName: string }>> {
+export async function getCoachClientCheckins(
+  coachId: string,
+  clientId: string,
+): Promise<CheckinResult<{ checkins: CheckinSummary[]; clientDisplayName: string; edRiskFlagged: boolean }>> {
   const [engagement] = await db
     .select({ id: engagements.id, status: engagements.status, endedAt: engagements.endedAt })
     .from(engagements)
@@ -484,7 +505,7 @@ export async function getCoachClientCheckins(coachId: string, clientId: string):
     return showWeight ? summary : { ...summary, bodyweightKg: null, bodyweightTrendKg: null, measurements: null };
   });
 
-  return ok({ checkins: summaries, clientDisplayName: client.displayName });
+  return ok({ checkins: summaries, clientDisplayName: client.displayName, edRiskFlagged });
 }
 
 export interface AwaitingReplyItem {
@@ -516,6 +537,7 @@ export interface TrendSeries {
   weight: { date: string; trendKg: number | null; rawKg: number | null }[] | null; // null = suppressed
   e1rm: { exerciseId: string; exerciseName: string; points: E1rmSeriesPoint[] }[];
   adherence: AdherenceSeriesPoint[];
+  edRiskFlagged: boolean;
 }
 
 export async function getTrendSeries(
@@ -609,7 +631,7 @@ export async function getTrendSeries(
   const e1rm = await computeE1rmSeries(clientId, e1rmScopeIds, effectiveWindowStart, timezone, visibleUpTo);
   const adherence = await computeAdherenceSeries(engagementIds, effectiveWindowStart, visibleUpToIsoDate);
 
-  return ok({ weight, e1rm, adherence });
+  return ok({ weight, e1rm, adherence, edRiskFlagged });
 }
 
 async function computeE1rmSeries(
