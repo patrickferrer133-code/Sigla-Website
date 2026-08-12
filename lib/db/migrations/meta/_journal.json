@@ -36,6 +36,13 @@
       "when": 1786541464260,
       "tag": "0004_checkins_feature_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786561191281,
+      "tag": "0005_cynical_toad_men",
+      "breakpoints": true
     }
   ]
 }

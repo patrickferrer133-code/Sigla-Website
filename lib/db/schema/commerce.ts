@@ -3,6 +3,7 @@ import {
   date,
   integer,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -51,6 +52,30 @@ export const engagements = pgTable(
     ...timestamps,
   },
   (table) => [unique().on(table.coachId, table.clientId, table.startedAt)],
+);
+
+// Gated to clients whose engagement has run for the minimum eligible length
+// (docs/07 phase 2: "reviews, gated so only clients with a completed
+// engagement of a minimum length can review") — enforced in
+// lib/marketplace/service.ts, not here.
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: idColumn(),
+    engagementId: uuid("engagement_id")
+      .notNull()
+      .unique()
+      .references(() => engagements.id),
+    coachId: uuid("coach_id")
+      .notNull()
+      .references(() => coachProfiles.id),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clientProfiles.id),
+    rating: smallint("rating").notNull(),
+    body: text("body"),
+    ...timestamps,
+  },
 );
 
 export const subscriptions = pgTable("subscriptions", {

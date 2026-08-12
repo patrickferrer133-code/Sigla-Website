@@ -7,7 +7,6 @@ import { savePackageSchema } from "@/lib/marketplace/schemas";
 import { createPackage, updatePackage, setPackagePublished } from "@/lib/marketplace/service";
 
 export type PackageFormState = { status: "idle" } | { status: "error"; message: string } | { status: "saved" };
-export const initialPackageFormState: PackageFormState = { status: "idle" };
 
 function parseForm(formData: FormData) {
   return savePackageSchema.safeParse({

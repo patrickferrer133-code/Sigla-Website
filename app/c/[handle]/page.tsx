@@ -18,7 +18,7 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
   const profile = await getCoachPublicProfile(handle);
   if (!profile) notFound();
 
-  const { coach, packages } = profile;
+  const { coach, packages, reviews } = profile;
   const user = await getCurrentUser();
 
   return (
@@ -86,6 +86,21 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
                 )}
               </CardContent>
             </Card>
+          ))}
+        </div>
+      )}
+
+      {reviews.length > 0 && (
+        <div className="mt-10 flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Reviews</h2>
+          {reviews.map((review) => (
+            <div key={review.id} className="border-b pb-4 text-sm last:border-0">
+              <div className="flex items-baseline justify-between">
+                <span className="font-medium">{review.clientDisplayName}</span>
+                <span className="text-muted-foreground">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+              </div>
+              {review.body && <p className="mt-1 text-muted-foreground">{review.body}</p>}
+            </div>
           ))}
         </div>
       )}

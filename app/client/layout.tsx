@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/client/check-in", label: "Check-in" },
   { href: "/client/progress", label: "Progress" },
   { href: "/client/messages", label: "Messages" },
+  { href: "/client/coach", label: "My coach" },
 ];
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {

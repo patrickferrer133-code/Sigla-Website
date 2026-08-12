@@ -27,3 +27,10 @@ export const savePackageSchema = z.object({
   slotLimit: z.coerce.number().int().min(1).max(1000).optional(),
 });
 export type SavePackageInput = z.infer<typeof savePackageSchema>;
+
+export const submitReviewSchema = z.object({
+  engagementId: z.string().uuid(),
+  rating: z.coerce.number().int().min(1).max(5),
+  body: z.string().trim().max(2000).optional(),
+});
+export type SubmitReviewInput = z.infer<typeof submitReviewSchema>;

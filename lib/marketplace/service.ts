@@ -2,13 +2,16 @@ import "server-only";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { coachProfiles, clientProfiles, users } from "@/lib/db/schema/identity";
-import { packages, engagements } from "@/lib/db/schema/commerce";
-import type { DiscoverFilters, ApplyToPackageInput, SavePackageInput } from "./schemas";
+import { packages, engagements, reviews } from "@/lib/db/schema/commerce";
+import { isEligibleForReview } from "@/lib/domain/reviews";
+import type { DiscoverFilters, ApplyToPackageInput, SavePackageInput, SubmitReviewInput } from "./schemas";
 
 export type MarketplaceError =
   | { code: "not_found"; resource: string }
   | { code: "already_engaged" }
-  | { code: "not_accepting_clients" };
+  | { code: "not_accepting_clients" }
+  | { code: "not_eligible" }
+  | { code: "already_reviewed" };
 export type MarketplaceResult<T> = { ok: true; data: T } | { ok: false; error: MarketplaceError };
 function ok<T>(data: T): MarketplaceResult<T> {
   return { ok: true, data };
@@ -79,13 +82,16 @@ export async function getCoachPublicProfile(handle: string) {
     .limit(1);
   if (!coach) return null;
 
-  const coachPackages = await db
-    .select()
-    .from(packages)
-    .where(and(eq(packages.coachId, coach.id), eq(packages.isPublished, true)))
-    .orderBy(packages.sortOrder);
+  const [coachPackages, coachReviews] = await Promise.all([
+    db
+      .select()
+      .from(packages)
+      .where(and(eq(packages.coachId, coach.id), eq(packages.isPublished, true)))
+      .orderBy(packages.sortOrder),
+    listReviewsForCoach(coach.id),
+  ]);
 
-  return { coach, packages: coachPackages };
+  return { coach, packages: coachPackages, reviews: coachReviews };
 }
 
 export async function applyToPackage(clientId: string, input: ApplyToPackageInput): Promise<MarketplaceResult<{ engagementId: string }>> {
@@ -223,4 +229,81 @@ export async function setPackagePublished(coachId: string, packageId: string, is
 
   await db.update(packages).set({ isPublished }).where(eq(packages.id, packageId));
   return ok(true);
+}
+
+export async function listClientEngagementsForReview(clientId: string) {
+  const rows = await db
+    .select({
+      engagementId: engagements.id,
+      status: engagements.status,
+      startedAt: engagements.startedAt,
+      coachHandle: coachProfiles.handle,
+      coachDisplayName: users.displayName,
+      hasReviewed: sql<boolean>`${reviews.id} is not null`,
+    })
+    .from(engagements)
+    .innerJoin(coachProfiles, eq(coachProfiles.id, engagements.coachId))
+    .innerJoin(users, eq(users.id, coachProfiles.userId))
+    .leftJoin(reviews, eq(reviews.engagementId, engagements.id))
+    .where(eq(engagements.clientId, clientId))
+    .orderBy(desc(engagements.createdAt));
+
+  return rows.map((row) => ({
+    ...row,
+    isEligible: !row.hasReviewed && isEligibleForReview({ status: row.status, startedAt: row.startedAt }),
+  }));
+}
+
+export async function submitReview(clientId: string, input: SubmitReviewInput): Promise<MarketplaceResult<true>> {
+  const [engagement] = await db
+    .select({ id: engagements.id, coachId: engagements.coachId, status: engagements.status, startedAt: engagements.startedAt })
+    .from(engagements)
+    .where(and(eq(engagements.id, input.engagementId), eq(engagements.clientId, clientId)))
+    .limit(1);
+  if (!engagement) return fail({ code: "not_found", resource: "engagement" });
+  if (!isEligibleForReview({ status: engagement.status, startedAt: engagement.startedAt })) {
+    return fail({ code: "not_eligible" });
+  }
+
+  const [existing] = await db
+    .select({ id: reviews.id })
+    .from(reviews)
+    .where(eq(reviews.engagementId, input.engagementId))
+    .limit(1);
+  if (existing) return fail({ code: "already_reviewed" });
+
+  await db.insert(reviews).values({
+    engagementId: input.engagementId,
+    coachId: engagement.coachId,
+    clientId,
+    rating: input.rating,
+    body: input.body,
+  });
+
+  const [agg] = await db
+    .select({ avg: sql<string>`avg(${reviews.rating})`, count: sql<number>`count(*)` })
+    .from(reviews)
+    .where(eq(reviews.coachId, engagement.coachId));
+  await db
+    .update(coachProfiles)
+    .set({ ratingAvg: agg.avg, ratingCount: Number(agg.count) })
+    .where(eq(coachProfiles.id, engagement.coachId));
+
+  return ok(true);
+}
+
+export async function listReviewsForCoach(coachId: string) {
+  return db
+    .select({
+      id: reviews.id,
+      rating: reviews.rating,
+      body: reviews.body,
+      createdAt: reviews.createdAt,
+      clientDisplayName: users.displayName,
+    })
+    .from(reviews)
+    .innerJoin(clientProfiles, eq(clientProfiles.id, reviews.clientId))
+    .innerJoin(users, eq(users.id, clientProfiles.userId))
+    .where(eq(reviews.coachId, coachId))
+    .orderBy(desc(reviews.createdAt));
 }
