@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
   { href: "/client", label: "Today" },
+  { href: "/client/feed", label: "Feed" },
   { href: "/client/check-in", label: "Check-in" },
   { href: "/client/progress", label: "Progress" },
   { href: "/client/messages", label: "Messages" },

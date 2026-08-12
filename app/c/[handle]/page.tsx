@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getCoachPublicProfile } from "@/lib/marketplace/service";
+import { listPublicPostsForCoach } from "@/lib/content/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplyButton } from "./apply-button";
 
@@ -19,7 +20,7 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
   if (!profile) notFound();
 
   const { coach, packages, reviews } = profile;
-  const user = await getCurrentUser();
+  const [user, posts] = await Promise.all([getCurrentUser(), listPublicPostsForCoach(coach.id)]);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
@@ -86,6 +87,21 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
                 )}
               </CardContent>
             </Card>
+          ))}
+        </div>
+      )}
+
+      {posts.length > 0 && (
+        <div className="mt-10 flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Posts</h2>
+          {posts.map((post) => (
+            <div key={post.id} className="border-b pb-4 text-sm last:border-0">
+              <div className="flex items-baseline justify-between">
+                <span className="font-medium">{post.title}</span>
+                <span className="text-xs text-muted-foreground">{post.kind?.replace(/_/g, " ")}</span>
+              </div>
+              <p className="mt-1 whitespace-pre-line text-muted-foreground">{post.bodyMd}</p>
+            </div>
           ))}
         </div>
       )}
