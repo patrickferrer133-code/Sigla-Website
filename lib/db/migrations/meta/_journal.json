@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786462247340,
+      "tag": "0000_enable_extensions",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786462257659,
+      "tag": "0001_init_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786467357700,
+      "tag": "0002_move_citext_to_extensions_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786467466143,
+      "tag": "0003_enable_rls_all_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786541464260,
+      "tag": "0004_checkins_feature_indexes",
+      "breakpoints": true
+    }
+  ]
+}

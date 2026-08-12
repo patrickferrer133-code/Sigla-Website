@@ -1,0 +1,95 @@
+import {
+  boolean,
+  date,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { idColumn, timestamps } from "./_shared";
+import { coachProfiles, clientProfiles } from "./identity";
+
+export const packages = pgTable("packages", {
+  id: idColumn(),
+  coachId: uuid("coach_id")
+    .notNull()
+    .references(() => coachProfiles.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  priceCents: integer("price_cents").notNull(),
+  currency: text("currency").notNull().default("PHP"),
+  billingPeriod: text("billing_period", {
+    enum: ["one_time", "monthly", "quarterly", "per_12_weeks"],
+  }).notNull(),
+  inclusions: text("inclusions").array(),
+  slotLimit: integer("slot_limit"),
+  slotsTaken: integer("slots_taken").notNull().default(0),
+  isPublished: boolean("is_published").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  ...timestamps,
+});
+
+export const engagements = pgTable(
+  "engagements",
+  {
+    id: idColumn(),
+    coachId: uuid("coach_id")
+      .notNull()
+      .references(() => coachProfiles.id),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clientProfiles.id),
+    packageId: uuid("package_id").references(() => packages.id),
+    status: text("status", {
+      enum: ["applied", "accepted", "active", "paused", "ended"],
+    }).notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    endReason: text("end_reason"),
+    ...timestamps,
+  },
+  (table) => [unique().on(table.coachId, table.clientId, table.startedAt)],
+);
+
+export const subscriptions = pgTable("subscriptions", {
+  id: idColumn(),
+  engagementId: uuid("engagement_id")
+    .notNull()
+    .references(() => engagements.id),
+  provider: text("provider"),
+  providerSubscriptionId: text("provider_subscription_id"),
+  status: text("status", {
+    enum: ["trialing", "active", "past_due", "canceled"],
+  }),
+  currentPeriodStart: timestamp("current_period_start", { withTimezone: true }),
+  currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+});
+
+export const payments = pgTable("payments", {
+  id: idColumn(),
+  subscriptionId: uuid("subscription_id").references(() => subscriptions.id),
+  amountCents: integer("amount_cents"),
+  currency: text("currency"),
+  platformFeeCents: integer("platform_fee_cents"),
+  coachNetCents: integer("coach_net_cents"),
+  status: text("status"),
+  providerPaymentId: text("provider_payment_id"),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
+});
+
+export const payouts = pgTable("payouts", {
+  id: idColumn(),
+  coachId: uuid("coach_id")
+    .notNull()
+    .references(() => coachProfiles.id),
+  amountCents: integer("amount_cents"),
+  currency: text("currency"),
+  status: text("status"),
+  providerPayoutId: text("provider_payout_id"),
+  periodStart: date("period_start"),
+  periodEnd: date("period_end"),
+  releasedAt: timestamp("released_at", { withTimezone: true }),
+});
