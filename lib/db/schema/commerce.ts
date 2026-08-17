@@ -25,6 +25,10 @@ export const packages = pgTable("packages", {
     enum: ["one_time", "monthly", "quarterly", "per_12_weeks"],
   }).notNull(),
   inclusions: text("inclusions").array(),
+  // Off-platform, same as the price itself (docs/02 section 9 decision 4:
+  // coaches bill clients directly). This is just the offer a coach
+  // advertises — Sigla never charges, holds, or tracks trial billing.
+  trialDays: integer("trial_days"),
   slotLimit: integer("slot_limit"),
   slotsTaken: integer("slots_taken").notNull().default(0),
   isPublished: boolean("is_published").notNull().default(false),
@@ -49,6 +53,10 @@ export const engagements = pgTable(
     startedAt: timestamp("started_at", { withTimezone: true }),
     endedAt: timestamp("ended_at", { withTimezone: true }),
     endReason: text("end_reason"),
+    // Snapshot of the package's trialDays at accept time, informational only
+    // — the coach still bills off-platform, this just shows both sides when
+    // the advertised free period is up.
+    trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
     ...timestamps,
   },
   (table) => [unique().on(table.coachId, table.clientId, table.startedAt)],

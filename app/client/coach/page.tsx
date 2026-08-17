@@ -41,6 +41,11 @@ export default async function MyCoachPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {eng.trialEndsAt && new Date(eng.trialEndsAt) > new Date() && (
+                <p className="mb-2 text-sm text-primary">
+                  Free trial ends {new Date(eng.trialEndsAt).toLocaleDateString()}
+                </p>
+              )}
               {eng.hasReviewed && <p className="text-sm text-muted-foreground">You reviewed this coach.</p>}
               {!eng.hasReviewed && eng.isEligible && <ReviewForm engagementId={eng.engagementId} />}
               {!eng.hasReviewed && !eng.isEligible && (

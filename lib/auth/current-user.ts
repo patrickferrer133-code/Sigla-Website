@@ -8,6 +8,7 @@ export interface CurrentUser {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl: string | null;
   role: "coach" | "client" | "admin";
   onboardingCompletedAt: Date | null;
 }
@@ -33,6 +34,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     id: row.id,
     email: row.email,
     displayName: row.displayName,
+    avatarUrl: row.avatarUrl,
     role: row.role as "coach" | "client" | "admin",
     onboardingCompletedAt: row.onboardingCompletedAt,
   };

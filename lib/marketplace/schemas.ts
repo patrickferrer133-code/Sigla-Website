@@ -25,6 +25,7 @@ export const savePackageSchema = z.object({
     .optional()
     .transform((v) => (v ? v.split("\n").map((s) => s.trim()).filter(Boolean) : [])),
   slotLimit: z.coerce.number().int().min(1).max(1000).optional(),
+  trialDays: z.coerce.number().int().min(1).max(90).optional(),
 });
 export type SavePackageInput = z.infer<typeof savePackageSchema>;
 

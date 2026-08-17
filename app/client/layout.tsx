@@ -6,6 +6,7 @@ import { AmbientBackground } from "@/components/ambient-background";
 
 const NAV_LINKS = [
   { href: "/client", label: "Today" },
+  { href: "/reels", label: "Reels" },
   { href: "/client/feed", label: "Feed" },
   { href: "/client/check-in", label: "Check-in" },
   { href: "/client/progress", label: "Progress" },
@@ -13,6 +14,7 @@ const NAV_LINKS = [
   { href: "/client/messages", label: "Messages" },
   { href: "/client/coach", label: "My coach" },
   { href: "/client/community", label: "Community" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {

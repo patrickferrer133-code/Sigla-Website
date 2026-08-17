@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { coachPosts } from "@/lib/db/schema/community";
 import { coachProfiles, users } from "@/lib/db/schema/identity";
@@ -127,6 +127,29 @@ export async function listFeedForClient(clientId: string) {
         ? or(eq(coachPosts.visibility, "public"), and(eq(coachPosts.visibility, "clients_only"), inArray(coachPosts.coachId, engagedCoachIds)))
         : eq(coachPosts.visibility, "public"),
     )
+    .orderBy(desc(coachPosts.publishedAt))
+    .limit(50);
+}
+
+// Public, unauthenticated-friendly: a scrollable feed of every public post
+// that has a video attached — the "reels" marketing surface. Only public
+// posts, never clients_only, since this is meant to be browsed by anyone.
+export async function listVideoReelsFeed() {
+  return db
+    .select({
+      id: coachPosts.id,
+      title: coachPosts.title,
+      bodyMd: coachPosts.bodyMd,
+      media: coachPosts.media,
+      publishedAt: coachPosts.publishedAt,
+      coachHandle: coachProfiles.handle,
+      coachDisplayName: users.displayName,
+      coachAvatarUrl: users.avatarUrl,
+    })
+    .from(coachPosts)
+    .innerJoin(coachProfiles, eq(coachProfiles.id, coachPosts.coachId))
+    .innerJoin(users, eq(users.id, coachProfiles.userId))
+    .where(and(eq(coachPosts.visibility, "public"), sql`${coachPosts.media}->>'type' = 'video'`))
     .orderBy(desc(coachPosts.publishedAt))
     .limit(50);
 }

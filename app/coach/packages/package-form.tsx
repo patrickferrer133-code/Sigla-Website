@@ -17,6 +17,7 @@ type PackageDefaults = {
   billingPeriod: string;
   inclusions: string[] | null;
   slotLimit: number | null;
+  trialDays: number | null;
 };
 
 export function PackageForm({ packageId, defaults }: { packageId?: string; defaults?: PackageDefaults }) {
@@ -68,9 +69,15 @@ export function PackageForm({ packageId, defaults }: { packageId?: string; defau
         <Label htmlFor={fieldId("inclusions")} className="text-xs text-muted-foreground">Inclusions (one per line)</Label>
         <Textarea id={fieldId("inclusions")} name="inclusions" rows={3} defaultValue={defaults?.inclusions?.join("\n") ?? ""} />
       </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={fieldId("slotLimit")} className="text-xs text-muted-foreground">Slot limit (optional)</Label>
-        <Input id={fieldId("slotLimit")} name="slotLimit" type="number" min={1} defaultValue={defaults?.slotLimit ?? undefined} />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={fieldId("slotLimit")} className="text-xs text-muted-foreground">Slot limit (optional)</Label>
+          <Input id={fieldId("slotLimit")} name="slotLimit" type="number" min={1} defaultValue={defaults?.slotLimit ?? undefined} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={fieldId("trialDays")} className="text-xs text-muted-foreground">Free trial (days, optional)</Label>
+          <Input id={fieldId("trialDays")} name="trialDays" type="number" min={1} max={90} placeholder="7" defaultValue={defaults?.trialDays ?? undefined} />
+        </div>
       </div>
 
       {state.status === "error" && <p className="text-sm text-destructive">{state.message}</p>}

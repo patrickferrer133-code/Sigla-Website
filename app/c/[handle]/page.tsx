@@ -74,6 +74,11 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3 text-sm">
+                {pkg.trialDays && (
+                  <span className="w-fit rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    {pkg.trialDays}-day free trial
+                  </span>
+                )}
                 {pkg.description && <p className="text-muted-foreground">{pkg.description}</p>}
                 {pkg.inclusions && pkg.inclusions.length > 0 && (
                   <ul className="list-inside list-disc text-muted-foreground">

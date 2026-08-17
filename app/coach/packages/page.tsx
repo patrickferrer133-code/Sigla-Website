@@ -46,6 +46,7 @@ export default async function PackagesPage() {
                   billingPeriod: pkg.billingPeriod,
                   inclusions: pkg.inclusions,
                   slotLimit: pkg.slotLimit,
+                  trialDays: pkg.trialDays,
                 }}
               />
               <PublishToggle packageId={pkg.id} isPublished={pkg.isPublished} />

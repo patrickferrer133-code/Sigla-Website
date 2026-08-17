@@ -24,6 +24,7 @@ function parseForm(formData: FormData) {
     billingPeriod: formData.get("billingPeriod"),
     inclusions: formData.get("inclusions") || undefined,
     slotLimit: formData.get("slotLimit") || undefined,
+    trialDays: formData.get("trialDays") || undefined,
   });
 }
 

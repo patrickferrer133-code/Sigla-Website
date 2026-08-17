@@ -157,7 +157,7 @@ export async function respondToApplication(
   decision: "accept" | "decline",
 ): Promise<MarketplaceResult<true>> {
   const [engagement] = await db
-    .select({ id: engagements.id, status: engagements.status })
+    .select({ id: engagements.id, status: engagements.status, packageId: engagements.packageId })
     .from(engagements)
     .where(and(eq(engagements.id, engagementId), eq(engagements.coachId, coachId)))
     .limit(1);
@@ -168,9 +168,15 @@ export async function respondToApplication(
     const check = await assertCanAcceptNewClient(coachId);
     if (!check.allowed) return fail({ code: "client_limit_reached" });
 
+    let trialEndsAt: Date | null = null;
+    if (engagement.packageId) {
+      const [pkg] = await db.select({ trialDays: packages.trialDays }).from(packages).where(eq(packages.id, engagement.packageId)).limit(1);
+      if (pkg?.trialDays) trialEndsAt = new Date(Date.now() + pkg.trialDays * 24 * 60 * 60 * 1000);
+    }
+
     await db
       .update(engagements)
-      .set({ status: "active", startedAt: new Date() })
+      .set({ status: "active", startedAt: new Date(), trialEndsAt })
       .where(eq(engagements.id, engagementId));
   } else {
     await db
@@ -197,6 +203,7 @@ export async function createPackage(coachId: string, input: SavePackageInput): P
       billingPeriod: input.billingPeriod,
       inclusions: input.inclusions,
       slotLimit: input.slotLimit,
+      trialDays: input.trialDays,
     })
     .returning({ id: packages.id });
   return ok({ packageId: pkg.id });
@@ -220,6 +227,7 @@ export async function updatePackage(coachId: string, packageId: string, input: S
       billingPeriod: input.billingPeriod,
       inclusions: input.inclusions,
       slotLimit: input.slotLimit,
+      trialDays: input.trialDays,
     })
     .where(eq(packages.id, packageId));
   return ok(true);
@@ -274,6 +282,7 @@ export async function listClientEngagementsForReview(clientId: string) {
       engagementId: engagements.id,
       status: engagements.status,
       startedAt: engagements.startedAt,
+      trialEndsAt: engagements.trialEndsAt,
       coachHandle: coachProfiles.handle,
       coachDisplayName: users.displayName,
       hasReviewed: sql<boolean>`${reviews.id} is not null`,

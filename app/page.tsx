@@ -68,6 +68,9 @@ export default async function MarketingHomePage() {
             <Link href="/discover" className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline">
               Discover
             </Link>
+            <Link href="/reels" className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline">
+              Reels
+            </Link>
             <Button render={<Link href="/sign-in" />} nativeButton={false} variant="ghost" size="sm">
               Sign in
             </Button>
