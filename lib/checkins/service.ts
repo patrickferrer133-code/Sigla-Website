@@ -80,7 +80,7 @@ async function findActiveEngagementForClient(clientId: string) {
   return row ?? null;
 }
 
-async function hasUnresolvedEdRiskFlag(clientId: string): Promise<boolean> {
+export async function hasUnresolvedEdRiskFlag(clientId: string): Promise<boolean> {
   const [row] = await db
     .select({ id: safetyFlags.id })
     .from(safetyFlags)

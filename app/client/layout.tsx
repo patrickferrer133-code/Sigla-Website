@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/client/feed", label: "Feed" },
   { href: "/client/check-in", label: "Check-in" },
   { href: "/client/progress", label: "Progress" },
+  { href: "/client/nutrition", label: "Nutrition" },
   { href: "/client/messages", label: "Messages" },
   { href: "/client/coach", label: "My coach" },
   { href: "/client/community", label: "Community" },

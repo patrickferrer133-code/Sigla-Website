@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser } from "@/lib/programs/service";
@@ -30,7 +31,12 @@ export default async function CoachClientCheckinsPage({ params }: { params: Prom
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold">{clientDisplayName} — check-ins</h1>
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">{clientDisplayName} — check-ins</h1>
+        <Link href={`/coach/clients/${clientId}/nutrition`} className="text-sm text-primary underline underline-offset-4">
+          Nutrition
+        </Link>
+      </div>
 
       {edRiskFlagged && (
         <Card className="mt-4 border-destructive/40 bg-destructive/5">

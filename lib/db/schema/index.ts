@@ -8,3 +8,4 @@ export * from "./checkins";
 export * from "./community";
 export * from "./funnel";
 export * from "./billing";
+export * from "./nutrition";

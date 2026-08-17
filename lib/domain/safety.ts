@@ -128,6 +128,29 @@ export function shouldSuppressWeightAndCalorieDisplay(params: {
   return !params.clientOptedIntoWeightDisplay;
 }
 
+/**
+ * The freeform habits/notes text on a nutrition plan is a floor-bypass and
+ * ED-suppression bypass vector: habit_based and portion_based plans skip the
+ * clearance gate and the BMR clamp entirely (docs/01 section 9), and the
+ * habits array is rendered to the client verbatim even when ED-risk
+ * suppression has nulled the numeric target. A coach typing "eat 1000 kcal"
+ * or "stay under 1200 calories" as a habit routes around both. Detect it and
+ * refuse the write — this is a guard, never an override (CLAUDE.md rule 2).
+ */
+export function containsNumericCalorieTarget(text: string): boolean {
+  // A bare number adjacent to a calorie/energy word, in either order.
+  const unit = "(?:k?cals?\\b|kilo ?calories?\\b|calories?\\b|kj\\b)";
+  const patterns = [
+    new RegExp(`\\d[\\d,.]*\\s*${unit}`, "i"),
+    new RegExp(`${unit}[^.\\n]{0,20}?\\d`, "i"),
+  ];
+  return patterns.some((p) => p.test(text));
+}
+
+export function findNumericCalorieTargetInHabits(habits: readonly string[]): string | null {
+  return habits.find((h) => containsNumericCalorieTarget(h)) ?? null;
+}
+
 export interface SafetyGateInput {
   hasUnresolvedBlockingFlag: boolean;
 }

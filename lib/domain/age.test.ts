@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { isAtLeastMinimumAge } from "./age";
+import { isAtLeastMinimumAge, ageInYears } from "./age";
+
+describe("ageInYears", () => {
+  it("computes whole years, accounting for whether the birthday has passed this year", () => {
+    const now = new Date("2026-06-15T00:00:00.000Z");
+    expect(ageInYears(new Date("2000-06-15"), now)).toBe(26);
+    expect(ageInYears(new Date("2000-06-16"), now)).toBe(25);
+    expect(ageInYears(new Date("2000-01-01"), now)).toBe(26);
+  });
+});
 
 describe("isAtLeastMinimumAge", () => {
   const now = new Date("2026-06-15T00:00:00.000Z");

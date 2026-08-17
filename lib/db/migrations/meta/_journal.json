@@ -64,6 +64,13 @@
       "when": 1786987000000,
       "tag": "0008_empty_northstar",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786988000000,
+      "tag": "0009_lovely_thing",
+      "breakpoints": true
     }
   ]
 }
