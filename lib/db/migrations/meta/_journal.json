@@ -71,6 +71,13 @@
       "when": 1786988000000,
       "tag": "0009_lovely_thing",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786988465174,
+      "tag": "0010_mushy_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

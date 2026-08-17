@@ -3,15 +3,31 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { getCoachClientCheckins, getTrendSeries } from "@/lib/checkins/service";
+import { isAuthorizedForCoach } from "@/lib/team/service";
 import { headlineWeightKg } from "@/lib/domain/checkins";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendLineChart } from "@/components/charts/trend-line-chart";
 import { ReplyForm } from "./reply-form";
 
-export default async function CoachClientCheckinsPage({ params }: { params: Promise<{ clientId: string }> }) {
+export default async function CoachClientCheckinsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ clientId: string }>;
+  searchParams: Promise<{ as?: string }>;
+}) {
   const { clientId } = await params;
+  const { as } = await searchParams;
   const user = await requireRole("coach");
-  const coachId = await getCoachProfileIdForUser(user.id);
+
+  let coachId: string | null;
+  if (as) {
+    const authorized = await isAuthorizedForCoach(user.id, as);
+    if (!authorized) notFound();
+    coachId = as;
+  } else {
+    coachId = await getCoachProfileIdForUser(user.id);
+  }
   if (!coachId) notFound();
 
   // Authorization first, not in parallel with the trend query — a coach
@@ -102,7 +118,7 @@ export default async function CoachClientCheckinsPage({ params }: { params: Prom
                       {c.gotInTheWay}
                     </p>
                   )}
-                  <ReplyForm checkinId={c.id} existingReply={c.coachReply} />
+                  <ReplyForm checkinId={c.id} existingReply={c.coachReply} actingAsCoachId={as ?? null} />
                 </CardContent>
               </Card>
             ))}

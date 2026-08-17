@@ -1,13 +1,25 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { getAwaitingReplyCheckins } from "@/lib/checkins/service";
+import { isAuthorizedForCoach } from "@/lib/team/service";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default async function CoachCheckinsPage() {
+export default async function CoachCheckinsPage({ searchParams }: { searchParams: Promise<{ as?: string }> }) {
   const user = await requireRole("coach");
-  const coachId = await getCoachProfileIdForUser(user.id);
-  const items = coachId ? await getAwaitingReplyCheckins(coachId) : [];
+  const { as } = await searchParams;
+
+  let activeCoachId: string | null;
+  if (as) {
+    const authorized = await isAuthorizedForCoach(user.id, as);
+    if (!authorized) notFound();
+    activeCoachId = as;
+  } else {
+    activeCoachId = await getCoachProfileIdForUser(user.id);
+  }
+
+  const items = activeCoachId ? await getAwaitingReplyCheckins(activeCoachId) : [];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -18,7 +30,7 @@ export default async function CoachCheckinsPage() {
       ) : (
         <div className="mt-6 flex flex-col gap-3">
           {items.map((item) => (
-            <Link key={item.checkinId} href={`/coach/clients/${item.clientId}/checkins`}>
+            <Link key={item.checkinId} href={`/coach/clients/${item.clientId}/checkins${as ? `?as=${as}` : ""}`}>
               <Card className="transition-colors hover:border-primary">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-base">{item.clientDisplayName}</CardTitle>

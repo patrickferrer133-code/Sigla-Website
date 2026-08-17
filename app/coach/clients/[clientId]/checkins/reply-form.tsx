@@ -7,8 +7,9 @@ import { replyToCheckinAction, type ReplyFormState } from "./actions";
 
 const initialState: ReplyFormState = { status: "idle" };
 
-export function ReplyForm({ checkinId, existingReply }: { checkinId: string; existingReply: string | null }) {
-  const [state, formAction, isPending] = useActionState(replyToCheckinAction, initialState);
+export function ReplyForm({ checkinId, existingReply, actingAsCoachId }: { checkinId: string; existingReply: string | null; actingAsCoachId: string | null }) {
+  const action = replyToCheckinAction.bind(null, actingAsCoachId);
+  const [state, formAction, isPending] = useActionState(action, initialState);
 
   return (
     <form action={formAction} className="mt-3 flex flex-col gap-2">
