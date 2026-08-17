@@ -14,6 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <nav className="flex items-center gap-4">
             <Link href="/admin" className="text-sm hover:text-primary hover:underline">Dashboard</Link>
             <Link href="/admin/moderation" className="text-sm hover:text-primary hover:underline">Moderation</Link>
+            <Link href="/admin/coaches" className="text-sm hover:text-primary hover:underline">Coaches</Link>
           </nav>
         </div>
         <form action={signOutAction}>

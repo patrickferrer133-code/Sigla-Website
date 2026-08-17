@@ -8,9 +8,11 @@ const NAV_LINKS = [
   { href: "/coach/applications", label: "Applications" },
   { href: "/coach/packages", label: "Packages" },
   { href: "/coach/posts", label: "Posts" },
+  { href: "/coach/content-studio", label: "Content Studio" },
   { href: "/coach/programs", label: "Programs" },
   { href: "/coach/checkins", label: "Check-ins" },
   { href: "/coach/messages", label: "Messages" },
+  { href: "/coach/billing", label: "Billing" },
   { href: "/coach/settings", label: "Settings" },
 ];
 

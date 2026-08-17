@@ -2,8 +2,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { listApplicationsForCoach } from "@/lib/marketplace/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { respondToApplicationAction } from "./actions";
+import { RespondButtons } from "./respond-buttons";
 
 export default async function ApplicationsPage() {
   const user = await requireRole("coach");
@@ -29,14 +28,7 @@ export default async function ApplicationsPage() {
             </CardHeader>
             <CardContent className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{app.packageTitle ?? "No package selected"}</span>
-              <div className="flex gap-2">
-                <form action={respondToApplicationAction.bind(null, app.engagementId, "decline")}>
-                  <Button type="submit" variant="ghost" size="sm">Decline</Button>
-                </form>
-                <form action={respondToApplicationAction.bind(null, app.engagementId, "accept")}>
-                  <Button type="submit" size="sm">Accept</Button>
-                </form>
-              </div>
+              <RespondButtons engagementId={app.engagementId} />
             </CardContent>
           </Card>
         ))}

@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 import { coachProfiles, clientProfiles, users } from "@/lib/db/schema/identity";
 import { packages, engagements, reviews } from "@/lib/db/schema/commerce";
 import { isEligibleForReview } from "@/lib/domain/reviews";
+import { assertCanAcceptNewClient } from "@/lib/billing/service";
 import type { DiscoverFilters, ApplyToPackageInput, SavePackageInput, SubmitReviewInput, SaveCoachProfileInput } from "./schemas";
 
 export type MarketplaceError =
@@ -12,7 +13,8 @@ export type MarketplaceError =
   | { code: "not_accepting_clients" }
   | { code: "not_eligible" }
   | { code: "already_reviewed" }
-  | { code: "handle_taken" };
+  | { code: "handle_taken" }
+  | { code: "client_limit_reached" };
 export type MarketplaceResult<T> = { ok: true; data: T } | { ok: false; error: MarketplaceError };
 function ok<T>(data: T): MarketplaceResult<T> {
   return { ok: true, data };
@@ -163,6 +165,9 @@ export async function respondToApplication(
   if (engagement.status !== "applied") return fail({ code: "not_found", resource: "engagement" });
 
   if (decision === "accept") {
+    const check = await assertCanAcceptNewClient(coachId);
+    if (!check.allowed) return fail({ code: "client_limit_reached" });
+
     await db
       .update(engagements)
       .set({ status: "active", startedAt: new Date() })
