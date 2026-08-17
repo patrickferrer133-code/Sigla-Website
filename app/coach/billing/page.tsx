@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { getBillingSummaryForCoach } from "@/lib/billing/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 const TIERS = [
   { code: "free", label: "Starter", price: "₱0 / month" },
@@ -16,7 +17,7 @@ function formatClients(n: number | "unlimited") {
 export default async function CoachBillingPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  if (!coachId) return <p className="text-sm text-muted-foreground">Complete your coach profile first.</p>;
+  if (!coachId) return <CompleteProfilePrompt />;
 
   const summary = await getBillingSummaryForCoach(coachId);
   const currentLabel = TIERS.find((t) => t.code === summary.tier)?.label ?? "Starter";

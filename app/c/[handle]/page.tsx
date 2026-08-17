@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { getCoachPublicProfile } from "@/lib/marketplace/service";
 import { listPublicPostsForCoach } from "@/lib/content/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AmbientBackground } from "@/components/ambient-background";
+import { PostMediaDisplay } from "@/components/post-media";
 import { ApplyButton } from "./apply-button";
 
 function formatPrice(cents: number, currency: string) {
@@ -23,10 +25,12 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
   const [user, posts] = await Promise.all([getCurrentUser(), listPublicPostsForCoach(coach.id)]);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <div className="flex items-start justify-between gap-4">
+    <div className="relative min-h-svh">
+      <AmbientBackground />
+      <div className="mx-auto max-w-2xl px-4 py-16">
+      <div className="glass-strong flex items-start justify-between gap-4 rounded-3xl p-6 shadow-sm">
         <div>
-          <h1 className="text-2xl font-semibold">{coach.displayName}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">{coach.displayName}</h1>
           <p className="text-sm text-muted-foreground">@{coach.handle}</p>
         </div>
         {coach.verificationStatus === "verified" && (
@@ -95,12 +99,13 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
         <div className="mt-10 flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Posts</h2>
           {posts.map((post) => (
-            <div key={post.id} className="border-b pb-4 text-sm last:border-0">
+            <div key={post.id} className="flex flex-col gap-2 border-b pb-4 text-sm last:border-0">
               <div className="flex items-baseline justify-between">
                 <span className="font-medium">{post.title}</span>
                 <span className="text-xs text-muted-foreground">{post.kind?.replace(/_/g, " ")}</span>
               </div>
-              <p className="mt-1 whitespace-pre-line text-muted-foreground">{post.bodyMd}</p>
+              <PostMediaDisplay media={post.media} />
+              <p className="whitespace-pre-line text-muted-foreground">{post.bodyMd}</p>
             </div>
           ))}
         </div>
@@ -120,6 +125,7 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -3,11 +3,12 @@ import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { listApplicationsForCoach } from "@/lib/marketplace/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RespondButtons } from "./respond-buttons";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 export default async function ApplicationsPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  if (!coachId) return <p className="text-sm text-muted-foreground">Complete your coach profile first.</p>;
+  if (!coachId) return <CompleteProfilePrompt />;
 
   const applications = await listApplicationsForCoach(coachId);
 

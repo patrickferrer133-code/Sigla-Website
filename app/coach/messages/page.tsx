@@ -4,11 +4,14 @@ import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { getCoachConversations, getUnreadCounts } from "@/lib/messaging/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 export default async function CoachMessagesPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  const conversations = coachId ? await getCoachConversations(coachId) : [];
+  if (!coachId) return <CompleteProfilePrompt />;
+
+  const conversations = await getCoachConversations(coachId);
   const unreadByEngagement = await getUnreadCounts(conversations.map((c) => c.engagementId), user.id);
 
   return (

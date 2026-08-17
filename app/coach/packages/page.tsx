@@ -4,6 +4,7 @@ import { listPackagesForOwner } from "@/lib/marketplace/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PackageForm } from "./package-form";
 import { PublishToggle } from "./publish-toggle";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat("en-PH", { style: "currency", currency }).format(cents / 100);
@@ -12,7 +13,7 @@ function formatPrice(cents: number, currency: string) {
 export default async function PackagesPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  if (!coachId) return <p className="text-sm text-muted-foreground">Complete your coach profile first.</p>;
+  if (!coachId) return <CompleteProfilePrompt />;
 
   const packages = await listPackagesForOwner(coachId);
 

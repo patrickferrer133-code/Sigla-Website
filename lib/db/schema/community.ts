@@ -13,7 +13,7 @@ export const coachPosts = pgTable("coach_posts", {
   }),
   title: text("title"),
   bodyMd: text("body_md"),
-  media: jsonb("media"),
+  media: jsonb("media").$type<{ type: "image" | "video"; url: string } | null>(),
   tags: text("tags").array(),
   visibility: text("visibility", { enum: ["public", "clients_only"] }),
   // Requires the platform tier's content push entitlement.

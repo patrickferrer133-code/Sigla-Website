@@ -3,13 +3,15 @@ import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { listPostsForCoachOwner } from "@/lib/content/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PostMediaDisplay } from "@/components/post-media";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 import { NewPostForm } from "./new-post-form";
 import { deletePostAction } from "./actions";
 
 export default async function PostsPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  if (!coachId) return <p className="text-sm text-muted-foreground">Complete your coach profile first.</p>;
+  if (!coachId) return <CompleteProfilePrompt />;
 
   const posts = await listPostsForCoachOwner(coachId);
 
@@ -41,6 +43,7 @@ export default async function PostsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
+              <PostMediaDisplay media={post.media} />
               <p className="whitespace-pre-line text-muted-foreground">{post.bodyMd}</p>
               <form action={deletePostAction.bind(null, post.id)}>
                 <Button type="submit" variant="ghost" size="sm">Delete</Button>

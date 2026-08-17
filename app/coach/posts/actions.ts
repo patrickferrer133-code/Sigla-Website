@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { savePostSchema } from "@/lib/content/schemas";
-import { createPost, deletePost } from "@/lib/content/service";
+import { createPost, deletePost, uploadPostMedia } from "@/lib/content/service";
 
 export type PostFormState = { status: "idle" } | { status: "error"; message: string } | { status: "saved" };
 
@@ -22,7 +22,19 @@ export async function createPostAction(_prevState: PostFormState, formData: Form
   });
   if (!parsed.success) return { status: "error", message: "Double check the fields." };
 
-  await createPost(coachId, parsed.data);
+  const file = formData.get("media");
+  let media = null;
+  if (file instanceof File && file.size > 0) {
+    const uploadResult = await uploadPostMedia(coachId, file);
+    if (!uploadResult.ok) {
+      if (uploadResult.error.code === "file_too_large") return { status: "error", message: `File is too large — max ${uploadResult.error.maxMb}MB.` };
+      if (uploadResult.error.code === "unsupported_file_type") return { status: "error", message: "Unsupported file type. Use JPG, PNG, WEBP, GIF, MP4, WEBM, or MOV." };
+      return { status: "error", message: "Could not upload the file. Try again." };
+    }
+    media = uploadResult.data;
+  }
+
+  await createPost(coachId, parsed.data, media);
   revalidatePath("/coach/posts");
   return { status: "saved" };
 }

@@ -5,6 +5,7 @@ import { getCoachAlertQueue } from "@/lib/alerts/service";
 import type { AlertKind } from "@/lib/domain/alerts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 // Priority order matches docs/08 section 2 — weeks_3_to_6_churn_risk
 // outranks everything else, it's the highest-leverage retention signal.
@@ -33,7 +34,18 @@ const ALERT_LABELS: Record<AlertKind, string> = {
 export default async function CoachDashboardPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  const queue = coachId ? await getCoachAlertQueue(coachId) : [];
+  if (!coachId) {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <h1 className="text-2xl font-semibold">Welcome, {user.displayName}</h1>
+        <div className="mt-6">
+          <CompleteProfilePrompt />
+        </div>
+      </div>
+    );
+  }
+
+  const queue = await getCoachAlertQueue(coachId);
 
   const flagged = queue
     .filter((item) => item.alerts.length > 0)

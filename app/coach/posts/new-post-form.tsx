@@ -45,6 +45,11 @@ export function NewPostForm() {
         <Label htmlFor="tags" className="text-xs text-muted-foreground">Tags (comma separated)</Label>
         <Input id="tags" name="tags" placeholder="fat loss, strength" />
       </div>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="media" className="text-xs text-muted-foreground">Photo or video (optional)</Label>
+        <Input id="media" name="media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" />
+        <p className="text-xs text-muted-foreground">Images up to 8MB, videos up to 100MB.</p>
+      </div>
 
       {state.status === "error" && <p className="text-sm text-destructive">{state.message}</p>}
       {state.status === "saved" && <p className="text-sm text-primary">Posted.</p>}

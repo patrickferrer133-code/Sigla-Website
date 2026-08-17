@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InviteForm } from "./invite-form";
 import { removeTeamMemberAction } from "./actions";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 export default async function TeamPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  if (!coachId) return <p className="text-sm text-muted-foreground">Complete your coach profile first.</p>;
+  if (!coachId) return <CompleteProfilePrompt />;
 
   const [summary, members, assisting] = await Promise.all([
     getBillingSummaryForCoach(coachId),

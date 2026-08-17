@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { listFeedForClient } from "@/lib/content/service";
+import { PostMediaDisplay } from "@/components/post-media";
 
 export default async function FeedPage() {
   const user = await requireRole("client");
@@ -24,6 +25,11 @@ export default async function FeedPage() {
               <span className="text-xs text-muted-foreground">{post.kind?.replace(/_/g, " ")}</span>
             </div>
             <h2 className="mt-2 text-lg font-semibold">{post.title}</h2>
+            {post.media && (
+              <div className="mt-2">
+                <PostMediaDisplay media={post.media} />
+              </div>
+            )}
             <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">{post.bodyMd}</p>
             {post.tags && post.tags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">

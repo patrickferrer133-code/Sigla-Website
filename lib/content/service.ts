@@ -4,9 +4,14 @@ import { db } from "@/lib/db/client";
 import { coachPosts } from "@/lib/db/schema/community";
 import { coachProfiles, users } from "@/lib/db/schema/identity";
 import { engagements } from "@/lib/db/schema/commerce";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { SavePostInput } from "./schemas";
 
-export type ContentError = { code: "not_found"; resource: string };
+export type ContentError =
+  | { code: "not_found"; resource: string }
+  | { code: "file_too_large"; maxMb: number }
+  | { code: "unsupported_file_type" }
+  | { code: "upload_failed" };
 export type ContentResult<T> = { ok: true; data: T } | { ok: false; error: ContentError };
 function ok<T>(data: T): ContentResult<T> {
   return { ok: true, data };
@@ -15,11 +20,44 @@ function fail<T>(error: ContentError): ContentResult<T> {
   return { ok: false, error };
 }
 
-// Freeform coach-authored text only — no automatic pull-in of a client's
-// numbers, photos, or story. That is the consent-gated content-seed system
-// (docs/08, Content Studio), a separate and later feature. Nothing here
-// needs client consent because nothing here is generated from client data.
-export async function createPost(coachId: string, input: SavePostInput): Promise<ContentResult<{ postId: string }>> {
+const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const MAX_IMAGE_MB = 8;
+const MAX_VIDEO_MB = 100;
+
+export type PostMedia = { type: "image" | "video"; url: string };
+
+// Public bucket (post-media): coach marketing content, not a client progress
+// photo — CLAUDE.md rule 3 (private keys + signed URLs only) applies to
+// client progress photos, not to a coach's own promotional post media.
+export async function uploadPostMedia(coachId: string, file: File): Promise<ContentResult<PostMedia>> {
+  const isImage = IMAGE_TYPES.has(file.type);
+  const isVideo = VIDEO_TYPES.has(file.type);
+  if (!isImage && !isVideo) return fail({ code: "unsupported_file_type" });
+
+  const maxMb = isImage ? MAX_IMAGE_MB : MAX_VIDEO_MB;
+  if (file.size > maxMb * 1024 * 1024) return fail({ code: "file_too_large", maxMb });
+
+  const supabase = createAdminClient();
+  const ext = file.name.split(".").pop() ?? (isImage ? "jpg" : "mp4");
+  const path = `${coachId}/${crypto.randomUUID()}.${ext}`;
+
+  const { error } = await supabase.storage.from("post-media").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) return fail({ code: "upload_failed" });
+
+  const { data: publicUrl } = supabase.storage.from("post-media").getPublicUrl(path);
+  return ok({ type: isImage ? "image" : "video", url: publicUrl.publicUrl });
+}
+
+// Freeform coach-authored text and media only — no automatic pull-in of a
+// client's numbers, photos, or story. That is the consent-gated
+// content-seed system (docs/08, Content Studio), a separate and later
+// feature. Nothing here needs client consent because nothing here is
+// generated from client data.
+export async function createPost(coachId: string, input: SavePostInput, media: PostMedia | null): Promise<ContentResult<{ postId: string }>> {
   const [post] = await db
     .insert(coachPosts)
     .values({
@@ -27,6 +65,7 @@ export async function createPost(coachId: string, input: SavePostInput): Promise
       kind: input.kind,
       title: input.title,
       bodyMd: input.bodyMd,
+      media,
       tags: input.tags,
       visibility: input.visibility,
       publishedAt: new Date(),
@@ -74,6 +113,7 @@ export async function listFeedForClient(clientId: string) {
       kind: coachPosts.kind,
       title: coachPosts.title,
       bodyMd: coachPosts.bodyMd,
+      media: coachPosts.media,
       tags: coachPosts.tags,
       publishedAt: coachPosts.publishedAt,
       coachHandle: coachProfiles.handle,

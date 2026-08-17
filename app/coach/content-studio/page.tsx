@@ -6,6 +6,7 @@ import { hasContentStudioAccess } from "@/lib/billing/entitlements";
 import { HOOK_LIBRARY } from "@/lib/content-studio/hooks-library";
 import { SCRIPT_TEMPLATES } from "@/lib/content-studio/script-templates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 const CATEGORY_LABEL: Record<string, string> = {
   pain_point: "Pain point",
@@ -21,7 +22,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 export default async function ContentStudioPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  if (!coachId) return <p className="text-sm text-muted-foreground">Complete your coach profile first.</p>;
+  if (!coachId) return <CompleteProfilePrompt />;
 
   const summary = await getBillingSummaryForCoach(coachId);
   const hasScriptAccess = hasContentStudioAccess(summary.tier, "standard");

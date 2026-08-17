@@ -3,11 +3,14 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getCoachProfileIdForUser, listCoachTemplates } from "@/lib/programs/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewTemplateForm } from "./new-template-form";
+import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 
 export default async function ProgramsPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
-  const templates = coachId ? await listCoachTemplates(coachId) : [];
+  if (!coachId) return <CompleteProfilePrompt />;
+
+  const templates = await listCoachTemplates(coachId);
 
   return (
     <div className="mx-auto max-w-3xl">
