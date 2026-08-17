@@ -9,10 +9,17 @@ import { createPackage, updatePackage, setPackagePublished } from "@/lib/marketp
 export type PackageFormState = { status: "idle" } | { status: "error"; message: string } | { status: "saved" };
 
 function parseForm(formData: FormData) {
+  // The form collects a normal decimal price (e.g. "1500.00") — converting
+  // to cents here, not asking the coach to do currency-to-cents math
+  // themselves. Storage stays integer cents throughout (CLAUDE.md: money as
+  // integer cents, never a float).
+  const priceInput = formData.get("price");
+  const priceCents = typeof priceInput === "string" && priceInput.trim() !== "" ? Math.round(parseFloat(priceInput) * 100) : NaN;
+
   return savePackageSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description") || undefined,
-    priceCents: formData.get("priceCents"),
+    priceCents,
     currency: formData.get("currency") || "PHP",
     billingPeriod: formData.get("billingPeriod"),
     inclusions: formData.get("inclusions") || undefined,

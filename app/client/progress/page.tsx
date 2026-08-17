@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { getTrendSeries } from "@/lib/checkins/service";
@@ -10,12 +11,28 @@ export default async function ProgressPage() {
   const user = await requireRole("client");
   const clientId = await getClientProfileIdForUser(user.id);
   if (!clientId) {
-    return <p className="text-sm text-muted-foreground">Progress shows up here once you have a coach and a plan.</p>;
+    return (
+      <div className="mx-auto max-w-xl">
+        <h1 className="text-2xl font-semibold">Progress starts with a coach</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Progress shows up here once you have a coach and a plan.</p>
+        <Link href="/discover" className="mt-4 inline-block text-sm text-primary underline underline-offset-4">
+          Find a coach
+        </Link>
+      </div>
+    );
   }
 
   const result = await getTrendSeries(clientId, { role: "client" });
   if (!result.ok) {
-    return <p className="text-sm text-muted-foreground">Progress shows up here once you have a coach and a plan.</p>;
+    return (
+      <div className="mx-auto max-w-xl">
+        <h1 className="text-2xl font-semibold">Progress starts with a coach</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Progress shows up here once you have a coach and a plan.</p>
+        <Link href="/discover" className="mt-4 inline-block text-sm text-primary underline underline-offset-4">
+          Find a coach
+        </Link>
+      </div>
+    );
   }
 
   const { weight, e1rm, adherence, edRiskFlagged } = result.data;

@@ -32,6 +32,7 @@ export default function SignUpPage() {
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required />
+            <p className="text-xs text-muted-foreground">At least 8 characters.</p>
           </div>
           <fieldset className="flex flex-col gap-2">
             <legend className="text-sm font-medium">I am a...</legend>

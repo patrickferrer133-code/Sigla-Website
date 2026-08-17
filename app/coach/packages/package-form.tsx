@@ -37,8 +37,17 @@ export function PackageForm({ packageId, defaults }: { packageId?: string; defau
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
-          <Label htmlFor={fieldId("priceCents")} className="text-xs text-muted-foreground">Price (cents)</Label>
-          <Input id={fieldId("priceCents")} name="priceCents" type="number" min={0} defaultValue={defaults?.priceCents} required />
+          <Label htmlFor={fieldId("price")} className="text-xs text-muted-foreground">Price (₱)</Label>
+          <Input
+            id={fieldId("price")}
+            name="price"
+            type="number"
+            min={0}
+            step={0.01}
+            placeholder="1500.00"
+            defaultValue={defaults ? (defaults.priceCents / 100).toFixed(2) : undefined}
+            required
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor={fieldId("billingPeriod")} className="text-xs text-muted-foreground">Billing period</Label>
