@@ -21,6 +21,10 @@ export const users = pgTable("users", {
   locale: text("locale").notNull().default("en-PH"),
   timezone: text("timezone").notNull().default("Asia/Manila"),
   onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true }),
+  // docs/06 section 6: minimum account age is 18, age-gated and attested at
+  // signup. Not nullable-and-ignored — every row created after this migration
+  // has it, and the signup schema requires the checkbox to submit at all.
+  ageAttestedAt: timestamp("age_attested_at", { withTimezone: true }),
   ...timestamps,
   ...softDelete,
 });

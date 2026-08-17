@@ -20,7 +20,10 @@ export async function completeClientOnboardingAction(_prevState: OnboardingFormS
   if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Check the form and try again." };
 
   const result = await completeClientOnboarding(user.id, parsed.data);
-  if (!result.ok) return { status: "error", message: "Could not save. Try again." };
+  if (!result.ok) {
+    if (result.error.code === "underage") return { status: "error", message: "Sigla accounts require you to be 18 or older." };
+    return { status: "error", message: "Could not save. Try again." };
+  }
 
   redirect("/client/intake");
 }

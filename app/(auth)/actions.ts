@@ -40,6 +40,7 @@ export async function signUpAction(
     password: formData.get("password"),
     displayName: formData.get("displayName"),
     role: formData.get("role"),
+    ageAttestation: formData.get("ageAttestation"),
   });
   if (!parsed.success) {
     return { status: "error", message: parsed.error.issues[0]?.message ?? "Check the form and try again." };
@@ -59,6 +60,7 @@ export async function signUpAction(
     email: parsed.data.email,
     displayName: parsed.data.displayName,
     role: parsed.data.role,
+    ageAttestedAt: new Date(),
   });
 
   redirect("/onboarding");

@@ -2,9 +2,10 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { clientProfiles, coachProfiles, users } from "@/lib/db/schema/identity";
+import { isAtLeastMinimumAge } from "@/lib/domain/age";
 import type { ClientOnboardingInput, CoachOnboardingInput } from "./schemas";
 
-export type OnboardingError = { code: "handle_taken" } | { code: "already_onboarded" };
+export type OnboardingError = { code: "handle_taken" } | { code: "already_onboarded" } | { code: "underage" };
 export type OnboardingResult<T> = { ok: true; data: T } | { ok: false; error: OnboardingError };
 function ok<T>(data: T): OnboardingResult<T> {
   return { ok: true, data };
@@ -16,6 +17,10 @@ function fail<T>(error: OnboardingError): OnboardingResult<T> {
 export async function completeClientOnboarding(userId: string, input: ClientOnboardingInput): Promise<OnboardingResult<{ clientId: string }>> {
   const [existing] = await db.select({ id: clientProfiles.id }).from(clientProfiles).where(eq(clientProfiles.userId, userId)).limit(1);
   if (existing) return fail({ code: "already_onboarded" });
+
+  // The signup checkbox is an attestation; this is the real check, since we
+  // now have an actual date of birth to check it against (docs/06 section 6).
+  if (!isAtLeastMinimumAge(new Date(input.dateOfBirth))) return fail({ code: "underage" });
 
   const [profile] = await db
     .insert(clientProfiles)

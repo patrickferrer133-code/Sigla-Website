@@ -46,6 +46,10 @@ export default function SignUpPage() {
               </label>
             </div>
           </fieldset>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="ageAttestation" required className="mt-0.5" />
+            <span>I confirm I am 18 years of age or older.</span>
+          </label>
           {state.status === "error" && <p className="text-sm text-destructive">{state.message}</p>}
           <Button type="submit" disabled={isPending} className="w-full">
             {isPending ? "Creating account..." : "Create account"}

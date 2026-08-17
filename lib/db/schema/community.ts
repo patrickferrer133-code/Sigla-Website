@@ -81,9 +81,14 @@ export const reports = pgTable("reports", {
   id: idColumn(),
   targetType: text("target_type", { enum: ["community_post", "community_comment", "message"] }).notNull(),
   targetId: uuid("target_id").notNull(),
-  reporterUserId: uuid("reporter_user_id")
-    .notNull()
-    .references(() => users.id),
+  // Nullable: a keyword auto-flag has no human reporter. Never backfill this
+  // with the content's own author — that corrupts report provenance and
+  // becomes a rule-4-adjacent leak the moment this queue opens to
+  // coach_moderator (docs/06 section 5's "trusted member and coach moderator
+  // roles"), since a moderator would then see who among their clients
+  // "reported" their own post.
+  reporterUserId: uuid("reporter_user_id").references(() => users.id),
+  source: text("source", { enum: ["user_report", "auto_flag"] }).notNull().default("user_report"),
   reason: text("reason").notNull(),
   status: text("status", { enum: ["open", "reviewing", "actioned", "dismissed"] })
     .notNull()
