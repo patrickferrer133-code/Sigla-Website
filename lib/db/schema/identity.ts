@@ -53,6 +53,7 @@ export const coachProfiles = pgTable("coach_profiles", {
     .notNull()
     .default("unverified"),
   introVideoUrl: text("intro_video_url"),
+  coverPhotoUrl: text("cover_photo_url"),
   tier: text("tier", { enum: ["free", "pro", "premium"] })
     .notNull()
     .default("free"),

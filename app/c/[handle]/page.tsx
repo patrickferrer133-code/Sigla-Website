@@ -16,6 +16,9 @@ function billingLabel(period: string) {
   return { one_time: "one-time", monthly: "/month", quarterly: "/quarter", per_12_weeks: "/12 weeks" }[period] ?? period;
 }
 
+const DEFAULT_COVER_GRADIENT =
+  "bg-[linear-gradient(120deg,oklch(0.72_0.16_65)/25,oklch(0.65_0.18_25)/25,oklch(0.7_0.14_200)/25)]";
+
 export default async function CoachPublicPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   const profile = await getCoachPublicProfile(handle);
@@ -28,14 +31,49 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
     <div className="relative min-h-svh">
       <AmbientBackground />
       <div className="mx-auto max-w-2xl px-4 py-16">
-      <div className="glass-strong flex items-start justify-between gap-4 rounded-3xl p-6 shadow-sm">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{coach.displayName}</h1>
-          <p className="text-sm text-muted-foreground">@{coach.handle}</p>
-        </div>
-        {coach.verificationStatus === "verified" && (
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">Verified</span>
+      <Link
+        href="/"
+        className="glass mb-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4">
+          <path d="m3 9 9-7 9 7" />
+          <path d="M9 22V12h6v10" />
+        </svg>
+        Home
+      </Link>
+
+      <div className={`mb-4 h-32 w-full overflow-hidden rounded-2xl ${coach.coverPhotoUrl ? "" : DEFAULT_COVER_GRADIENT}`}>
+        {coach.coverPhotoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL
+          <img src={coach.coverPhotoUrl} alt="" className="size-full object-cover" />
         )}
+      </div>
+
+      <div className="glass-strong flex items-start justify-between gap-4 rounded-3xl p-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          {coach.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={coach.avatarUrl} alt={coach.displayName} className="size-16 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-semibold text-primary">
+              {coach.displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">{coach.displayName}</h1>
+            <p className="text-sm text-muted-foreground">@{coach.handle}</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-1.5">
+          {coach.verificationStatus === "verified" && (
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">Verified</span>
+          )}
+          {coach.isFoundingCoach && (
+            <span className="rounded-full bg-[oklch(0.72_0.16_65)]/15 px-3 py-1 text-xs font-medium text-[oklch(0.55_0.16_65)]">
+              Founding Coach
+            </span>
+          )}
+        </div>
       </div>
 
       {coach.headline && <p className="mt-3 text-base">{coach.headline}</p>}
@@ -54,13 +92,17 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
         </div>
       )}
 
-      {coach.bio && <p className="mt-6 whitespace-pre-line text-sm leading-relaxed">{coach.bio}</p>}
+      {coach.bio ? (
+        <p className="mt-6 whitespace-pre-line text-sm leading-relaxed">{coach.bio}</p>
+      ) : (
+        <p className="mt-6 text-sm text-muted-foreground italic">This coach hasn&apos;t added a bio yet.</p>
+      )}
 
       {!coach.acceptingClients && (
         <p className="mt-6 text-sm text-muted-foreground">This coach isn&apos;t accepting new clients right now.</p>
       )}
 
-      {packages.length > 0 && (
+      {packages.length > 0 ? (
         <div className="mt-10 flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Packages</h2>
           {packages.map((pkg) => (
@@ -98,9 +140,14 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
             </Card>
           ))}
         </div>
+      ) : (
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold">Packages</h2>
+          <p className="mt-2 text-sm text-muted-foreground italic">This coach doesn&apos;t have any packages yet.</p>
+        </div>
       )}
 
-      {posts.length > 0 && (
+      {posts.length > 0 ? (
         <div className="mt-10 flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Posts</h2>
           {posts.map((post) => (
@@ -113,6 +160,11 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
               <p className="whitespace-pre-line text-muted-foreground">{post.bodyMd}</p>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold">Posts</h2>
+          <p className="mt-2 text-sm text-muted-foreground italic">This coach hasn&apos;t posted anything yet.</p>
         </div>
       )}
 

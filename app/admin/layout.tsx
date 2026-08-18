@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { signOutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { AmbientBackground } from "@/components/ambient-background";
+import { Logo } from "@/components/logo";
 
 const NAV_LINKS = [
   { href: "/admin", label: "Dashboard" },
@@ -19,7 +20,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 z-20 px-3 pt-3 sm:px-4">
         <div className="glass mx-auto flex max-w-6xl flex-col gap-3 rounded-2xl px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-medium text-muted-foreground">Admin — {user.displayName}</p>
+            <div className="flex items-center gap-3">
+              <Logo className="h-5" />
+              <p className="text-sm font-medium text-muted-foreground">Admin — {user.displayName}</p>
+            </div>
             <form action={signOutAction} className="sm:hidden">
               <Button type="submit" variant="ghost" size="sm">Sign out</Button>
             </form>

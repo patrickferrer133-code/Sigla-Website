@@ -23,6 +23,10 @@ function fail<T>(error: MarketplaceError): MarketplaceResult<T> {
   return { ok: false, error };
 }
 
+// Kept in sync with app/page.tsx's FOUNDING_COACH_THRESHOLD — the badge is a
+// real fact about signup order (first N coaches ever), not a marketing number.
+const FOUNDING_COACH_THRESHOLD = 25;
+
 // Only fields safe for an anonymous public visitor. Never select sex_at_birth,
 // email, or anything from client_profiles here — this function has no access to it.
 export async function searchCoaches(filters: DiscoverFilters) {
@@ -73,17 +77,28 @@ export async function getCoachPublicProfile(handle: string) {
       credentials: coachProfiles.credentials,
       verificationStatus: coachProfiles.verificationStatus,
       introVideoUrl: coachProfiles.introVideoUrl,
+      coverPhotoUrl: coachProfiles.coverPhotoUrl,
       acceptingClients: coachProfiles.acceptingClients,
       ratingAvg: coachProfiles.ratingAvg,
       ratingCount: coachProfiles.ratingCount,
       displayName: users.displayName,
       avatarUrl: users.avatarUrl,
+      createdAt: coachProfiles.createdAt,
     })
     .from(coachProfiles)
     .innerJoin(users, eq(users.id, coachProfiles.userId))
     .where(eq(coachProfiles.handle, handle))
     .limit(1);
   if (!coach) return null;
+
+  // Founding-coach status is a real fact about signup order, not a marketing
+  // number — the badge is only true for coaches who actually joined within
+  // the platform's first FOUNDING_COACH_THRESHOLD signups.
+  const [{ signupRank }] = await db
+    .select({ signupRank: sql<number>`count(*)::int` })
+    .from(coachProfiles)
+    .where(sql`${coachProfiles.createdAt} <= ${coach.createdAt.toISOString()}`);
+  const isFoundingCoach = signupRank <= FOUNDING_COACH_THRESHOLD;
 
   const [coachPackages, coachReviews] = await Promise.all([
     db
@@ -94,7 +109,7 @@ export async function getCoachPublicProfile(handle: string) {
     listReviewsForCoach(coach.id),
   ]);
 
-  return { coach, packages: coachPackages, reviews: coachReviews };
+  return { coach: { ...coach, isFoundingCoach }, packages: coachPackages, reviews: coachReviews };
 }
 
 export async function applyToPackage(clientId: string, input: ApplyToPackageInput): Promise<MarketplaceResult<{ engagementId: string }>> {

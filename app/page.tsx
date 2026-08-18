@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 import { searchCoaches } from "@/lib/marketplace/service";
 import { db } from "@/lib/db/client";
 import { coachProfiles } from "@/lib/db/schema/identity";
@@ -42,12 +43,15 @@ function formatSpecialty(s: string) {
   return s.replace(/_/g, " ");
 }
 
+const FOUNDING_COACH_THRESHOLD = 25;
+
 export default async function MarketingHomePage() {
   const [coaches, [{ coachCount }]] = await Promise.all([
     searchCoaches({}),
     db.select({ coachCount: sql<number>`count(*)::int` }).from(coachProfiles),
   ]);
   const featured = coaches.slice(0, 6);
+  const isEarlyStage = coachCount < FOUNDING_COACH_THRESHOLD;
 
   return (
     <div className="relative flex min-h-svh flex-col overflow-x-hidden">
@@ -63,7 +67,7 @@ export default async function MarketingHomePage() {
       {/* Nav */}
       <header className="sticky top-0 z-20 px-4 pt-4">
         <nav className="glass mx-auto flex max-w-5xl items-center justify-between rounded-full px-5 py-3 shadow-sm">
-          <span className="text-lg font-semibold tracking-tight">Sigla</span>
+          <Logo className="h-7" glow />
           <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/discover" className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline">
               Discover
@@ -88,7 +92,7 @@ export default async function MarketingHomePage() {
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
           </span>
-          {coachCount}+ coaches already on Sigla
+          {isEarlyStage ? "Now accepting founding coaches" : `${coachCount}+ coaches already on Sigla`}
         </div>
 
         <h1 className="animate-in fade-in slide-in-from-bottom-4 mt-6 max-w-3xl text-5xl font-semibold tracking-tight text-balance duration-700 sm:text-7xl">
@@ -107,6 +111,23 @@ export default async function MarketingHomePage() {
           </Button>
         </div>
       </section>
+
+      {/* Founding coach callout — shown honestly while the roster is small */}
+      {isEarlyStage && (
+        <section className="animate-in fade-in duration-1000 delay-500 fill-mode-both border-y border-border/50 bg-muted/30 px-4 py-12">
+          <div className="glass-strong mx-auto flex max-w-3xl flex-col items-center gap-3 rounded-3xl p-8 text-center">
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">Founding coach spots open</span>
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Be one of Sigla&apos;s first coaches</h2>
+            <p className="max-w-lg text-balance text-sm text-muted-foreground">
+              We just launched. The first {FOUNDING_COACH_THRESHOLD} coaches to join get a Founding Coach badge on
+              their profile, first pick of visibility as we grow, and a direct line to us for shaping what gets built next.
+            </p>
+            <Button render={<Link href="/sign-up" />} nativeButton={false} className="mt-2 rounded-full px-6 text-base">
+              Claim your spot
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* Featured coaches marquee */}
       {featured.length > 0 && (

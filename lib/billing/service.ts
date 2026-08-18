@@ -1,8 +1,9 @@
 import "server-only";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, gt, isNull, lte, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { coachProfiles, users } from "@/lib/db/schema/identity";
 import { engagements } from "@/lib/db/schema/commerce";
+import { plans, planPrices } from "@/lib/db/schema/billing";
 import { getEntitlementsForTier, canAcceptAnotherClient, type CoachTier } from "./entitlements";
 
 export async function countActiveClients(coachId: string): Promise<number> {
@@ -39,6 +40,40 @@ export async function assertCanAcceptNewClient(coachId: string): Promise<{ allow
 // self-serve billing exists until a payment provider is wired up.
 export async function setCoachTier(coachId: string, tier: CoachTier): Promise<void> {
   await db.update(coachProfiles).set({ tier }).where(eq(coachProfiles.id, coachId));
+}
+
+// Current PH monthly list price per plan code, for the billing page. Amounts
+// stay integer centavos all the way to the formatter.
+export async function getPhMonthlyPlanPrices(): Promise<
+  Record<string, { amountCents: number; currency: string }>
+> {
+  const now = new Date();
+  const rows = await db
+    .select({
+      code: plans.code,
+      amountCents: planPrices.amountCents,
+      currency: planPrices.currency,
+      priceVersion: planPrices.priceVersion,
+    })
+    .from(planPrices)
+    .innerJoin(plans, eq(plans.id, planPrices.planId))
+    .where(
+      and(
+        eq(planPrices.region, "PH"),
+        eq(planPrices.interval, "month"),
+        eq(plans.isActive, true),
+        or(isNull(planPrices.effectiveFrom), lte(planPrices.effectiveFrom, now))!,
+        or(isNull(planPrices.effectiveTo), gt(planPrices.effectiveTo, now))!,
+      ),
+    )
+    .orderBy(planPrices.priceVersion);
+
+  const byCode: Record<string, { amountCents: number; currency: string }> = {};
+  for (const row of rows) {
+    // Ordered ascending by version, so the last write wins: the newest price.
+    byCode[row.code] = { amountCents: row.amountCents, currency: row.currency };
+  }
+  return byCode;
 }
 
 export async function listCoachesWithTierInfo() {
