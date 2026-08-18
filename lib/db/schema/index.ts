@@ -10,3 +10,4 @@ export * from "./funnel";
 export * from "./billing";
 export * from "./nutrition";
 export * from "./team";
+export * from "./announcements";

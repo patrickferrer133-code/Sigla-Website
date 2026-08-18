@@ -24,7 +24,8 @@ export type NavIcon =
   | "trending-up"
   | "utensils"
   | "user"
-  | "shield";
+  | "shield"
+  | "megaphone";
 
 export type NavLink = {
   href: string;
@@ -158,6 +159,13 @@ const ICON_PATHS: Record<NavIcon, React.ReactNode> = {
     <>
       <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
       <path d="m9 12 2 2 4-4" />
+    </>
+  ),
+  megaphone: (
+    <>
+      <path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z" />
+      <path d="M17 9a3 3 0 0 1 0 6" />
+      <path d="M7 14v5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-3" />
     </>
   ),
 };

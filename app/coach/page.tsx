@@ -6,6 +6,8 @@ import type { AlertKind } from "@/lib/domain/alerts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
+import { AnnouncementsBanner } from "@/components/announcements-banner";
+import { listPublishedAnnouncementsForRole } from "@/lib/announcements/service";
 
 // Priority order matches docs/08 section 2 — weeks_3_to_6_churn_risk
 // outranks everything else, it's the highest-leverage retention signal.
@@ -34,9 +36,11 @@ const ALERT_LABELS: Record<AlertKind, string> = {
 export default async function CoachDashboardPage() {
   const user = await requireRole("coach");
   const coachId = await getCoachProfileIdForUser(user.id);
+  const news = await listPublishedAnnouncementsForRole("coach", 3);
   if (!coachId) {
     return (
       <div className="mx-auto max-w-2xl">
+        <AnnouncementsBanner announcements={news} />
         <h1 className="text-2xl font-semibold">Welcome, {user.displayName}</h1>
         <div className="mt-6">
           <CompleteProfilePrompt />
@@ -54,6 +58,7 @@ export default async function CoachDashboardPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <AnnouncementsBanner announcements={news} />
       <h1 className="text-2xl font-semibold">Dashboard</h1>
       <p className="mt-1 text-sm text-muted-foreground">Clients who need you first, ranked by risk.</p>
 

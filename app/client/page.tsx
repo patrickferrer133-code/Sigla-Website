@@ -4,10 +4,13 @@ import { getClientActiveProgramSessions, getClientProfileIdForUser } from "@/lib
 import { listClientEngagementsForReview } from "@/lib/marketplace/service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnnouncementsBanner } from "@/components/announcements-banner";
+import { listPublishedAnnouncementsForRole } from "@/lib/announcements/service";
 
 export default async function ClientTodayPage() {
   const user = await requireRole("client");
   const clientId = await getClientProfileIdForUser(user.id);
+  const news = await listPublishedAnnouncementsForRole("client", 3);
   const [sessions, engagements] = clientId
     ? await Promise.all([getClientActiveProgramSessions(clientId), listClientEngagementsForReview(clientId)])
     : [[], []];
@@ -15,6 +18,7 @@ export default async function ClientTodayPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <AnnouncementsBanner announcements={news} />
       <h1 className="text-2xl font-semibold">Today</h1>
 
       {sessions.length === 0 ? (

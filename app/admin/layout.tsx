@@ -8,6 +8,7 @@ const NAV_LINKS: NavLink[] = [
   { href: "/admin", label: "Dashboard", icon: "home" },
   { href: "/admin/moderation", label: "Moderation", icon: "shield" },
   { href: "/admin/coaches", label: "Coaches", icon: "users" },
+  { href: "/admin/news", label: "News", icon: "megaphone" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
