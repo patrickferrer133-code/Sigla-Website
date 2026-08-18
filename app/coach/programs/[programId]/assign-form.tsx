@@ -23,7 +23,11 @@ export function AssignForm({
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-2">
       <input type="hidden" name="templateProgramId" value={templateProgramId} />
-      <Select name="engagementId" required>
+      <Select
+        name="engagementId"
+        required
+        items={assignableEngagements.map((e) => ({ label: e.clientDisplayName, value: e.engagementId }))}
+      >
         <SelectTrigger className="h-9 w-56">
           <SelectValue placeholder="Choose a client" />
         </SelectTrigger>
