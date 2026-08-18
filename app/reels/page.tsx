@@ -25,7 +25,7 @@ export default async function ReelsPage() {
           </div>
           <h1 className="text-xl font-semibold">No reels yet</h1>
           <p className="max-w-xs text-balance text-sm text-muted-foreground">
-            Coaches haven&apos;t posted any videos yet. Check back soon, or browse coaches in the meantime.
+            No one has posted a video yet. Check back soon, or browse coaches in the meantime.
           </p>
           <Button render={<Link href="/discover" />} nativeButton={false} className="mt-2 rounded-full px-6">
             Browse coaches

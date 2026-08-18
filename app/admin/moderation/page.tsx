@@ -2,17 +2,20 @@ import { requireRole } from "@/lib/auth/require-role";
 import { listOpenReports, getReportedContentBody } from "@/lib/community/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { resolveReportAction } from "./actions";
+import { resolveReportAction, takeDownPostAction } from "./actions";
 import { BackButton } from "@/components/back-button";
+import { REPORT_REASON_LABEL } from "@/lib/community/report-reasons";
 
 const REASON_LABEL: Record<string, string> = {
-  restriction_content: "Restriction / disordered eating content",
-  body_shaming: "Body shaming",
-  harassment: "Harassment",
-  medical_advice: "Unqualified medical advice",
-  selling_or_poaching: "Selling or poaching",
+  ...REPORT_REASON_LABEL,
   self_harm_risk: "Possible self-harm risk",
-  other: "Other",
+};
+
+const TARGET_LABEL: Record<string, string> = {
+  community_post: "post",
+  community_comment: "comment",
+  coach_post: "post (feed / reels)",
+  message: "message",
 };
 
 export default async function ModerationQueuePage() {
@@ -38,7 +41,7 @@ export default async function ModerationQueuePage() {
               <CardTitle className="flex items-baseline justify-between text-base">
                 <span>{REASON_LABEL[report.reason] ?? report.reason}</span>
                 <span className="text-xs font-normal text-muted-foreground">
-                  {report.targetType.replace("community_", "")} · {report.source === "auto_flag" ? "auto-flagged" : "reported by a member"}
+                  {TARGET_LABEL[report.targetType] ?? report.targetType} · {report.source === "auto_flag" ? "auto-flagged" : "reported by a member"}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -53,6 +56,13 @@ export default async function ModerationQueuePage() {
                 <form action={resolveReportAction.bind(null, report.id, "actioned")}>
                   <Button type="submit" size="sm">Mark actioned</Button>
                 </form>
+                {report.targetType === "coach_post" && (
+                  <form action={takeDownPostAction.bind(null, report.id, report.targetId)}>
+                    <Button type="submit" size="sm" variant="destructive">
+                      Take down post
+                    </Button>
+                  </form>
+                )}
               </div>
             </CardContent>
           </Card>

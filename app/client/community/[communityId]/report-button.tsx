@@ -3,16 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { reportContentAction } from "./actions";
-
-const REASONS = [
-  { value: "body_shaming", label: "Body shaming" },
-  { value: "harassment", label: "Harassment" },
-  { value: "restriction_content", label: "Restriction / disordered eating content" },
-  { value: "medical_advice", label: "Unqualified medical advice" },
-  { value: "selling_or_poaching", label: "Selling or poaching" },
-  { value: "self_harm_risk", label: "Someone may be at risk of harming themselves" },
-  { value: "other", label: "Other" },
-];
+import { REPORT_REASONS } from "@/lib/community/report-reasons";
 
 export function ReportButton({ targetType, targetId, communityId }: { targetType: "community_post" | "community_comment"; targetId: string; communityId: string }) {
   const [open, setOpen] = useState(false);
@@ -38,7 +29,7 @@ export function ReportButton({ targetType, targetId, communityId }: { targetType
     >
       <select name="reason" className="h-7 rounded-md border bg-background px-1 text-xs" required>
         <option value="">Reason…</option>
-        {REASONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+        {REPORT_REASONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
       </select>
       <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 text-xs">Submit</Button>
     </form>

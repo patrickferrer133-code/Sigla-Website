@@ -8,6 +8,7 @@ const NAV_LINKS: NavLink[] = [
   { href: "/client", label: "Today", icon: "sun" },
   { href: "/reels", label: "Reels", icon: "play-circle" },
   { href: "/client/feed", label: "Feed", icon: "grid" },
+  { href: "/client/posts", label: "Posts", icon: "image" },
   { href: "/client/check-in", label: "Check-in", icon: "check-circle" },
   { href: "/client/progress", label: "Progress", icon: "trending-up" },
   { href: "/client/nutrition", label: "Nutrition", icon: "utensils" },

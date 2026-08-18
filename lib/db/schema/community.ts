@@ -1,15 +1,26 @@
-import { boolean, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { idColumn } from "./_shared";
-import { coachProfiles, users } from "./identity";
+import { clientProfiles, coachProfiles, users } from "./identity";
 import { engagements } from "./commerce";
 
+// Despite the physical table name, this is now the shared posts table for
+// both coach-authored and client-authored posts. The table was not renamed
+// because a rename is disruptive to every existing migration, policy, and
+// query; `author_role` is the discriminator. Exactly one of coach_id /
+// client_id is set, enforced by coach_posts_author_consistency_check (raw
+// SQL in the migration — Drizzle does not generate CHECK constraints here).
 export const coachPosts = pgTable("coach_posts", {
   id: idColumn(),
-  coachId: uuid("coach_id")
+  coachId: uuid("coach_id").references(() => coachProfiles.id),
+  clientId: uuid("client_id").references(() => clientProfiles.id),
+  authorRole: text("author_role", { enum: ["coach", "client"] })
     .notNull()
-    .references(() => coachProfiles.id),
+    .default("coach"),
   kind: text("kind", {
-    enum: ["case_study", "article", "program_showcase", "video", "win"],
+    // case_study / article / program_showcase are coach business-content
+    // types. update is the client-authored counterpart; video and win are
+    // shared.
+    enum: ["case_study", "article", "program_showcase", "video", "win", "update"],
   }),
   title: text("title"),
   bodyMd: text("body_md"),
@@ -20,9 +31,21 @@ export const coachPosts = pgTable("coach_posts", {
   isPromoted: boolean("is_promoted").notNull().default(false),
   promotedUntil: timestamp("promoted_until", { withTimezone: true }),
   publishedAt: timestamp("published_at", { withTimezone: true }),
+  // Client-authored posts only: the poster affirms the public-posting
+  // guidelines (no before/after or body-comparison imagery, no goal weights
+  // or calorie numbers, no restriction content) before the post goes live.
+  // Recorded per docs/06 section 8's versioned-acceptance rule — store both
+  // when it was accepted and which wording was accepted, so a later revision
+  // of the guidelines does not silently rewrite history. Null for
+  // coach-authored rows.
+  guidelinesAckedAt: timestamp("guidelines_acked_at", { withTimezone: true }),
+  guidelinesAckVersion: text("guidelines_ack_version"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index("coach_posts_coach_id_idx").on(table.coachId),
+  index("coach_posts_client_id_idx").on(table.clientId),
+]);
 
 export const communities = pgTable("communities", {
   id: idColumn(),
@@ -79,7 +102,11 @@ export const communityComments = pgTable("community_comments", {
 
 export const reports = pgTable("reports", {
   id: idColumn(),
-  targetType: text("target_type", { enum: ["community_post", "community_comment", "message"] }).notNull(),
+  // coach_post covers the shared coach_posts table, so both coach-authored
+  // and client-authored posts (including everything on /reels) have a
+  // moderation path — docs/06 section 5 requires a report route on every
+  // surface that publishes user content.
+  targetType: text("target_type", { enum: ["community_post", "community_comment", "message", "coach_post"] }).notNull(),
   targetId: uuid("target_id").notNull(),
   // Nullable: a keyword auto-flag has no human reporter. Never backfill this
   // with the content's own author — that corrupts report provenance and

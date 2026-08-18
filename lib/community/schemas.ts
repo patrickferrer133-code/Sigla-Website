@@ -24,7 +24,9 @@ export const reportReasonSchema = z.enum([
 ]);
 
 export const createReportSchema = z.object({
-  targetType: z.enum(["community_post", "community_comment"]),
+  // coach_post is the shared posts table (coach- and client-authored posts,
+  // including reels).
+  targetType: z.enum(["community_post", "community_comment", "coach_post"]),
   targetId: z.string().uuid(),
   reason: reportReasonSchema,
 });

@@ -3,16 +3,33 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ReportReelButton } from "./report-reel-button";
 
 export type Reel = {
   id: string;
-  coachHandle: string;
-  coachDisplayName: string;
-  coachAvatarUrl: string | null;
+  authorRole: "coach" | "client";
+  // null for clients — they have no public profile page to link to.
+  authorHandle: string | null;
+  authorDisplayName: string;
+  authorAvatarUrl: string | null;
   title: string | null;
   bodyMd: string | null;
   media: { type: "image" | "video"; url: string } | null;
 };
+
+function AuthorBadge({ role }: { role: Reel["authorRole"] }) {
+  return (
+    <span
+      className={
+        role === "coach"
+          ? "rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-medium tracking-wide text-primary-foreground/90 ring-1 ring-primary/40"
+          : "rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-medium tracking-wide text-white/80 ring-1 ring-white/20"
+      }
+    >
+      {role === "coach" ? "Coach" : "Client"}
+    </span>
+  );
+}
 
 export function ReelItem({ reel }: { reel: Reel }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -72,18 +89,27 @@ export function ReelItem({ reel }: { reel: Reel }) {
 
       {/* Right action rail */}
       <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-col items-center justify-end gap-5 p-4 pb-28">
-        <Link href={`/c/${reel.coachHandle}`} className="pointer-events-auto flex flex-col items-center gap-1">
-          <span className="flex size-11 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/80">
-            {reel.coachAvatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL
-              <img src={reel.coachAvatarUrl} alt="" className="size-full object-cover" />
-            ) : (
-              <span className="flex size-full items-center justify-center bg-primary text-sm font-semibold text-primary-foreground">
-                {reel.coachDisplayName.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </span>
-        </Link>
+        {(() => {
+          const avatar = (
+            <span className="flex size-11 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/80">
+              {reel.authorAvatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL
+                <img src={reel.authorAvatarUrl} alt="" className="size-full object-cover" />
+              ) : (
+                <span className="flex size-full items-center justify-center bg-primary text-sm font-semibold text-primary-foreground">
+                  {reel.authorDisplayName.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </span>
+          );
+          return reel.authorHandle ? (
+            <Link href={`/c/${reel.authorHandle}`} className="pointer-events-auto flex flex-col items-center gap-1">
+              {avatar}
+            </Link>
+          ) : (
+            <span className="flex flex-col items-center gap-1">{avatar}</span>
+          );
+        })()}
 
         <button
           type="button"
@@ -122,20 +148,32 @@ export function ReelItem({ reel }: { reel: Reel }) {
             </svg>
           )}
         </button>
+
+        {/* Every reel is reportable, coach- and client-authored alike. */}
+        <ReportReelButton postId={reel.id} />
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 pr-20 pb-10">
         <div className="pointer-events-auto flex items-end justify-between gap-4">
           <div className="min-w-0 text-white">
-            <Link href={`/c/${reel.coachHandle}`} className="font-semibold">
-              @{reel.coachHandle}
-            </Link>
+            <span className="flex items-center gap-2">
+              {reel.authorHandle ? (
+                <Link href={`/c/${reel.authorHandle}`} className="truncate font-semibold">
+                  @{reel.authorHandle}
+                </Link>
+              ) : (
+                <span className="truncate font-semibold">{reel.authorDisplayName}</span>
+              )}
+              <AuthorBadge role={reel.authorRole} />
+            </span>
             {reel.title && <p className="mt-2 text-sm">{reel.title}</p>}
             {reel.bodyMd && <p className="mt-1 line-clamp-2 text-xs text-white/80">{reel.bodyMd}</p>}
           </div>
-          <Button render={<Link href={`/c/${reel.coachHandle}`} />} nativeButton={false} className="shrink-0 rounded-full">
-            Hire
-          </Button>
+          {reel.authorRole === "coach" && reel.authorHandle && (
+            <Button render={<Link href={`/c/${reel.authorHandle}`} />} nativeButton={false} className="shrink-0 rounded-full">
+              Hire
+            </Button>
+          )}
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@ import "server-only";
 import { and, asc, desc, eq, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import {
+  coachPosts,
   communities,
   communityComments,
   communityMemberships,
@@ -220,7 +221,11 @@ export async function createComment(userId: string, input: CreateCommentInput): 
   return ok({ commentId: comment.id, flagged: flags.includes("crisis") });
 }
 
-export async function createReport(reporterUserId: string, input: CreateReportInput): Promise<CommunityResult<true>> {
+// reporterUserId is nullable because /reels is a public, unauthenticated
+// surface: a visitor with no session must still be able to report content
+// (docs/06 section 5 requires a report path on every surface that publishes
+// user content). Null here means "no signed-in reporter", never the author.
+export async function createReport(reporterUserId: string | null, input: CreateReportInput): Promise<CommunityResult<true>> {
   await db.insert(reports).values({
     targetType: input.targetType,
     targetId: input.targetId,
@@ -248,7 +253,23 @@ export async function listOpenReports() {
 // Message reports aren't surfaced here — coach-client chat is private, and
 // reporting a message isn't wired up in the chat UI yet. Returns null for
 // that case rather than pulling private message content into this view.
-export async function getReportedContentBody(targetType: "community_post" | "community_comment" | "message", targetId: string): Promise<string | null> {
+export async function getReportedContentBody(
+  targetType: "community_post" | "community_comment" | "message" | "coach_post",
+  targetId: string,
+): Promise<string | null> {
+  if (targetType === "coach_post") {
+    // Shared posts table: coach- and client-authored posts, including
+    // everything on /reels. Title and body are both public and both are what
+    // the moderator needs to see. Media is not inlined here; the moderator
+    // opens the post itself for that.
+    const [row] = await db
+      .select({ title: coachPosts.title, bodyMd: coachPosts.bodyMd })
+      .from(coachPosts)
+      .where(eq(coachPosts.id, targetId))
+      .limit(1);
+    if (!row) return null;
+    return [row.title, row.bodyMd].filter(Boolean).join("\n\n");
+  }
   if (targetType === "community_post") {
     const [row] = await db.select({ bodyMd: communityPosts.bodyMd }).from(communityPosts).where(eq(communityPosts.id, targetId)).limit(1);
     return row?.bodyMd ?? null;
