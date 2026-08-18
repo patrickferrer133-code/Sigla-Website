@@ -149,6 +149,25 @@ export async function applyToPackage(clientId: string, input: ApplyToPackageInpu
   return ok({ engagementId: engagement.id });
 }
 
+// For the public coach page's Apply button: any status here means the
+// client already has a live relationship with this coach — engagements are
+// coach-level, not package-level, so this applies across all of the coach's
+// packages, matching the check already_engaged enforces in applyToPackage.
+export async function getClientEngagementStatusWithCoach(clientId: string, coachId: string) {
+  const [existing] = await db
+    .select({ status: engagements.status })
+    .from(engagements)
+    .where(
+      and(
+        eq(engagements.coachId, coachId),
+        eq(engagements.clientId, clientId),
+        or(eq(engagements.status, "applied"), eq(engagements.status, "accepted"), eq(engagements.status, "active"), eq(engagements.status, "paused")),
+      ),
+    )
+    .limit(1);
+  return existing?.status ?? null;
+}
+
 export async function listApplicationsForCoach(coachId: string) {
   return db
     .select({

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { getCoachPublicProfile } from "@/lib/marketplace/service";
+import { getCoachPublicProfile, getClientEngagementStatusWithCoach } from "@/lib/marketplace/service";
+import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { listPublicPostsForCoach } from "@/lib/content/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AmbientBackground } from "@/components/ambient-background";
@@ -17,6 +18,13 @@ function billingLabel(period: string) {
   return { one_time: "one-time", monthly: "/month", quarterly: "/quarter", per_12_weeks: "/12 weeks" }[period] ?? period;
 }
 
+const ENGAGEMENT_STATUS_LABEL: Record<string, string> = {
+  applied: "Already applied — pending",
+  accepted: "Already applied — accepted",
+  active: "Already your coach",
+  paused: "Already applied — paused",
+};
+
 const DEFAULT_COVER_GRADIENT =
   "bg-[linear-gradient(120deg,oklch(0.72_0.16_65)/25,oklch(0.65_0.18_25)/25,oklch(0.7_0.14_200)/25)]";
 
@@ -27,6 +35,12 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
 
   const { coach, packages, reviews } = profile;
   const [user, posts] = await Promise.all([getCurrentUser(), listPublicPostsForCoach(coach.id)]);
+
+  let engagementStatus: string | null = null;
+  if (user?.role === "client") {
+    const clientId = await getClientProfileIdForUser(user.id);
+    if (clientId) engagementStatus = await getClientEngagementStatusWithCoach(clientId, coach.id);
+  }
 
   return (
     <div className="relative min-h-svh">
@@ -120,7 +134,11 @@ export default async function CoachPublicPage({ params }: { params: Promise<{ ha
                   </ul>
                 )}
                 {coach.acceptingClients && (
-                  user?.role === "client" ? (
+                  engagementStatus ? (
+                    <span className="w-fit rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                      {ENGAGEMENT_STATUS_LABEL[engagementStatus] ?? "Already applied"}
+                    </span>
+                  ) : user?.role === "client" ? (
                     <ApplyButton packageId={pkg.id} />
                   ) : (
                     <Link href={`/sign-in?next=/c/${coach.handle}`} className="w-fit text-sm text-primary underline underline-offset-4">
