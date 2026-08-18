@@ -3,6 +3,7 @@ import { listOpenReports, getReportedContentBody } from "@/lib/community/service
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { resolveReportAction } from "./actions";
+import { BackButton } from "@/components/back-button";
 
 const REASON_LABEL: Record<string, string> = {
   restriction_content: "Restriction / disordered eating content",
@@ -24,6 +25,7 @@ export default async function ModerationQueuePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Moderation queue</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Reports never auto-delete content. Every item here is waiting on a human decision.

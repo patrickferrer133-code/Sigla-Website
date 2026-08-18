@@ -4,6 +4,7 @@ import { getEntitlementsForTier } from "@/lib/billing/entitlements";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { setCoachTierAction } from "./actions";
+import { BackButton } from "@/components/back-button";
 
 const TIERS = [
   { code: "free", label: "Starter" },
@@ -17,6 +18,7 @@ export default async function AdminCoachesPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Coaches</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Set a coach&apos;s plan once their off-platform payment is confirmed.

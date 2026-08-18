@@ -8,6 +8,7 @@ import { headlineWeightKg } from "@/lib/domain/checkins";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendLineChart } from "@/components/charts/trend-line-chart";
 import { ReplyForm } from "./reply-form";
+import { BackButton } from "@/components/back-button";
 
 export default async function CoachClientCheckinsPage({
   params,
@@ -47,6 +48,7 @@ export default async function CoachClientCheckinsPage({
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold">{clientDisplayName} — check-ins</h1>
         <Link href={`/coach/clients/${clientId}/nutrition`} className="text-sm text-primary underline underline-offset-4">

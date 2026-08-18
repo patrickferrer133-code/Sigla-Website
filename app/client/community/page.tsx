@@ -5,6 +5,7 @@ import { listGlobalCommunities, listCoachCommunitiesForClient, getMembership } f
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { joinCommunityAction } from "./actions";
+import { BackButton } from "@/components/back-button";
 
 export default async function CommunityListPage() {
   const user = await requireRole("client");
@@ -25,6 +26,7 @@ export default async function CommunityListPage() {
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Community</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         A judgement-free space. Post under your name or anonymously — your call, every time.

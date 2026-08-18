@@ -4,6 +4,7 @@ import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { listClientEngagementsForReview } from "@/lib/marketplace/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReviewForm } from "./review-form";
+import { BackButton } from "@/components/back-button";
 
 const STATUS_LABEL: Record<string, string> = {
   applied: "Application pending",
@@ -22,6 +23,7 @@ export default async function MyCoachPage() {
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Your coaching history</h1>
 
       {engagements.length === 0 && (

@@ -4,6 +4,7 @@ import { hasUnresolvedBlockingFlag, getLatestIntake } from "@/lib/intake/service
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoalForm } from "./goal-form";
 import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 
 export default async function GoalsPage() {
   const user = await requireRole("client");
@@ -17,6 +18,7 @@ export default async function GoalsPage() {
   if (!intake) {
     return (
       <div className="mx-auto max-w-xl">
+        <BackButton className="mb-4 self-start" />
         <h1 className="text-2xl font-semibold">Goals start after a quick health check</h1>
         <Link href="/client/intake" className="mt-4 inline-block text-sm text-primary underline underline-offset-4">
           Complete your intake
@@ -28,6 +30,7 @@ export default async function GoalsPage() {
   if (blocked) {
     return (
       <div className="mx-auto max-w-xl">
+        <BackButton className="mb-4 self-start" />
         <h1 className="text-2xl font-semibold">Almost there</h1>
         <Card className="mt-4">
           <CardHeader>
@@ -45,6 +48,7 @@ export default async function GoalsPage() {
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Set your goal</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         We&apos;ll check it against a safe, realistic pace, no judgment either way.

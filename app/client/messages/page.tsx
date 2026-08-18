@@ -4,6 +4,7 @@ import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { getClientConversations, getUnreadCounts } from "@/lib/messaging/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/back-button";
 
 export default async function ClientMessagesPage() {
   const user = await requireRole("client");
@@ -13,6 +14,7 @@ export default async function ClientMessagesPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Messages</h1>
 
       {conversations.length === 0 ? (

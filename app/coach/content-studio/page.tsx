@@ -7,6 +7,7 @@ import { HOOK_LIBRARY } from "@/lib/content-studio/hooks-library";
 import { SCRIPT_TEMPLATES } from "@/lib/content-studio/script-templates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
+import { BackButton } from "@/components/back-button";
 
 const CATEGORY_LABEL: Record<string, string> = {
   pain_point: "Pain point",
@@ -29,6 +30,7 @@ export default async function ContentStudioPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Content Studio</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Content is upstream of everything else — start here before the funnel.

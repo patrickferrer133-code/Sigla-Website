@@ -5,6 +5,7 @@ import { getCurrentWeekCheckin } from "@/lib/checkins/service";
 import { addDaysToIsoDate } from "@/lib/domain/checkins";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckinForm } from "./checkin-form";
+import { BackButton } from "@/components/back-button";
 
 export default async function CheckInPage() {
   const user = await requireRole("client");
@@ -24,6 +25,7 @@ export default async function CheckInPage() {
   if (checkin && !checkin.editable) {
     return (
       <div className="mx-auto max-w-xl">
+        <BackButton className="mb-4 self-start" />
         <h1 className="text-2xl font-semibold">This week is closed</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Your coach already replied to this week&apos;s check-in. Message them in chat for anything else.
@@ -40,6 +42,7 @@ export default async function CheckInPage() {
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">This week&apos;s check-in</h1>
       <p className="mt-1 text-sm text-muted-foreground">Everything here is optional. Fill in what you have.</p>
       <CheckinForm
@@ -57,6 +60,7 @@ export default async function CheckInPage() {
 function EmptyState() {
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Check-ins start with a coach</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Weekly check-ins show up here once you have an active coach and plan.

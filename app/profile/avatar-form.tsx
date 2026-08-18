@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
+import { FilePicker } from "@/components/file-picker";
 import { updateAvatarAction, type ProfileFormState } from "./actions";
 
 const initialState: ProfileFormState = { status: "idle" };
@@ -19,8 +20,13 @@ export function AvatarForm({ avatarUrl, displayName }: { avatarUrl: string | nul
           displayName.charAt(0).toUpperCase()
         )}
       </div>
-      <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" className="text-xs" />
-      <Button type="submit" size="sm" disabled={isPending} className="rounded-full">
+      <FilePicker
+        name="avatar"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        buttonLabel="Choose photo"
+        className="justify-center"
+      />
+      <Button type="submit" disabled={isPending} className="min-h-11 rounded-full px-5">
         {isPending ? "Uploading..." : "Update photo"}
       </Button>
       {state.status === "error" && <p className="text-xs text-destructive">{state.message}</p>}

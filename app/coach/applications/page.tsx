@@ -4,6 +4,7 @@ import { listApplicationsForCoach } from "@/lib/marketplace/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RespondButtons } from "./respond-buttons";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
+import { BackButton } from "@/components/back-button";
 
 export default async function ApplicationsPage() {
   const user = await requireRole("coach");
@@ -14,6 +15,7 @@ export default async function ApplicationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Applications</h1>
       <p className="mt-1 text-sm text-muted-foreground">Clients who applied to your packages.</p>
 

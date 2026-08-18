@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { InviteForm } from "./invite-form";
 import { removeTeamMemberAction } from "./actions";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
+import { BackButton } from "@/components/back-button";
 
 export default async function TeamPage() {
   const user = await requireRole("coach");
@@ -24,6 +25,7 @@ export default async function TeamPage() {
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Team</h1>
 
       {seatLimit === 0 ? (

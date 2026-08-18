@@ -4,6 +4,7 @@ import { getCoachProfileIdForUser, listCoachTemplates } from "@/lib/programs/ser
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewTemplateForm } from "./new-template-form";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
+import { BackButton } from "@/components/back-button";
 
 export default async function ProgramsPage() {
   const user = await requireRole("coach");
@@ -14,6 +15,7 @@ export default async function ProgramsPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Program templates</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Build a template once, then assign it to any client.

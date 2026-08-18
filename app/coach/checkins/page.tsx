@@ -5,6 +5,7 @@ import { getCoachProfileIdForUser } from "@/lib/programs/service";
 import { getAwaitingReplyCheckins } from "@/lib/checkins/service";
 import { isAuthorizedForCoach } from "@/lib/team/service";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { BackButton } from "@/components/back-button";
 
 export default async function CoachCheckinsPage({ searchParams }: { searchParams: Promise<{ as?: string }> }) {
   const user = await requireRole("coach");
@@ -23,6 +24,7 @@ export default async function CoachCheckinsPage({ searchParams }: { searchParams
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Check-ins awaiting reply</h1>
 
       {items.length === 0 ? (

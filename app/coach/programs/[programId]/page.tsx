@@ -12,6 +12,7 @@ import { addWeekAction, deleteExerciseGroupAction, deleteSessionAction } from ".
 import { AddSessionForm } from "./add-session-form";
 import { AddExerciseForm } from "./add-exercise-form";
 import { AssignForm } from "./assign-form";
+import { BackButton } from "@/components/back-button";
 
 export default async function ProgramBuilderPage({
   params,
@@ -34,6 +35,7 @@ export default async function ProgramBuilderPage({
 
   return (
     <div className="mx-auto max-w-3xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">{tree.title}</h1>
       {tree.description && <p className="mt-1 text-sm text-muted-foreground">{tree.description}</p>}
 

@@ -5,6 +5,7 @@ import { isUpgradeFrom, planCodeForTier, type CoachTierCode } from "@/lib/domain
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 import { UpgradeButton } from "./upgrade-button";
+import { BackButton } from "@/components/back-button";
 
 const TIERS = [
   { tier: "free", label: "Starter" },
@@ -46,6 +47,7 @@ export default async function CoachBillingPage({
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Plan and billing</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         You&apos;re on {currentLabel}. {formatClients(summary.activeClients)} of{" "}

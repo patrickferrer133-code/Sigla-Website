@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendLineChart, type TrendPoint } from "@/components/charts/trend-line-chart";
 import { setWeightVisibilityAction } from "./actions";
+import { BackButton } from "@/components/back-button";
 
 export default async function ProgressPage() {
   const user = await requireRole("client");
@@ -13,6 +14,7 @@ export default async function ProgressPage() {
   if (!clientId) {
     return (
       <div className="mx-auto max-w-xl">
+        <BackButton className="mb-4 self-start" />
         <h1 className="text-2xl font-semibold">Progress starts with a coach</h1>
         <p className="mt-2 text-sm text-muted-foreground">Progress shows up here once you have a coach and a plan.</p>
         <Link href="/discover" className="mt-4 inline-block text-sm text-primary underline underline-offset-4">
@@ -26,6 +28,7 @@ export default async function ProgressPage() {
   if (!result.ok) {
     return (
       <div className="mx-auto max-w-xl">
+        <BackButton className="mb-4 self-start" />
         <h1 className="text-2xl font-semibold">Progress starts with a coach</h1>
         <p className="mt-2 text-sm text-muted-foreground">Progress shows up here once you have a coach and a plan.</p>
         <Link href="/discover" className="mt-4 inline-block text-sm text-primary underline underline-offset-4">
@@ -42,6 +45,7 @@ export default async function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Progress</h1>
       <p className="mt-1 text-sm text-muted-foreground">Sessions, strength, and habits, not a single day&apos;s number.</p>
 

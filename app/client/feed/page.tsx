@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth/require-role";
 import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { listFeedForClient } from "@/lib/content/service";
 import { PostMediaDisplay } from "@/components/post-media";
+import { BackButton } from "@/components/back-button";
 
 export default async function FeedPage() {
   const user = await requireRole("client");
@@ -13,6 +14,7 @@ export default async function FeedPage() {
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Feed</h1>
 
       <div className="mt-6 flex flex-col gap-6">

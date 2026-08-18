@@ -7,6 +7,7 @@ import { coachProfiles } from "@/lib/db/schema/identity";
 import { eq } from "drizzle-orm";
 import { AmbientBackground } from "@/components/ambient-background";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BackButton } from "@/components/back-button";
 import { AvatarForm } from "./avatar-form";
 import { NameForm } from "./name-form";
 
@@ -27,6 +28,7 @@ export default async function ProfilePage() {
     <div className="relative min-h-svh">
       <AmbientBackground />
       <div className="mx-auto max-w-md px-4 py-16">
+        <BackButton className="mb-4" />
         <Card>
           <CardHeader>
             <CardTitle className="text-center text-lg">Your profile</CardTitle>

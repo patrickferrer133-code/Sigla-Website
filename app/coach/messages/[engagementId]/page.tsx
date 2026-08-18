@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
 import { getThread } from "@/lib/messaging/service";
 import { MessageForm } from "./message-form";
+import { BackButton } from "@/components/back-button";
 
 export default async function CoachThreadPage({ params }: { params: Promise<{ engagementId: string }> }) {
   const { engagementId } = await params;
@@ -13,6 +14,7 @@ export default async function CoachThreadPage({ params }: { params: Promise<{ en
 
   return (
     <div className="mx-auto flex h-[calc(100svh-9rem)] max-w-2xl flex-col">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-xl font-semibold">{counterpartName}</h1>
 
       <div className="mt-4 flex-1 overflow-y-auto rounded-md border">

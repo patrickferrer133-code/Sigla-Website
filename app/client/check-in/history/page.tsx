@@ -4,6 +4,7 @@ import { getClientProfileIdForUser } from "@/lib/logging/service";
 import { getClientCheckinHistory } from "@/lib/checkins/service";
 import { headlineWeightKg } from "@/lib/domain/checkins";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BackButton } from "@/components/back-button";
 
 export default async function CheckinHistoryPage() {
   const user = await requireRole("client");
@@ -14,6 +15,7 @@ export default async function CheckinHistoryPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Check-in history</h1>
 
       {checkinList.length === 0 ? (

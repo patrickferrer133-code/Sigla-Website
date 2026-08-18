@@ -7,6 +7,7 @@ import { PostMediaDisplay } from "@/components/post-media";
 import { CompleteProfilePrompt } from "@/components/complete-profile-prompt";
 import { NewPostForm } from "./new-post-form";
 import { deletePostAction } from "./actions";
+import { BackButton } from "@/components/back-button";
 
 export default async function PostsPage() {
   const user = await requireRole("coach");
@@ -17,6 +18,7 @@ export default async function PostsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">Posts</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Public posts appear on your profile and in the client feed. Clients-only posts reach only your current and past clients.

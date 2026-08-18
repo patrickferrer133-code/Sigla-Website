@@ -1,21 +1,20 @@
-import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { signOutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { AmbientBackground } from "@/components/ambient-background";
-import { Logo } from "@/components/logo";
+import { DashboardSidebar, type NavLink } from "@/components/dashboard-sidebar";
 
-const NAV_LINKS = [
-  { href: "/client", label: "Today" },
-  { href: "/reels", label: "Reels" },
-  { href: "/client/feed", label: "Feed" },
-  { href: "/client/check-in", label: "Check-in" },
-  { href: "/client/progress", label: "Progress" },
-  { href: "/client/nutrition", label: "Nutrition" },
-  { href: "/client/messages", label: "Messages" },
-  { href: "/client/coach", label: "My coach" },
-  { href: "/client/community", label: "Community" },
-  { href: "/profile", label: "Profile" },
+const NAV_LINKS: NavLink[] = [
+  { href: "/client", label: "Today", icon: "sun" },
+  { href: "/reels", label: "Reels", icon: "play-circle" },
+  { href: "/client/feed", label: "Feed", icon: "grid" },
+  { href: "/client/check-in", label: "Check-in", icon: "check-circle" },
+  { href: "/client/progress", label: "Progress", icon: "trending-up" },
+  { href: "/client/nutrition", label: "Nutrition", icon: "utensils" },
+  { href: "/client/messages", label: "Messages", icon: "message-circle" },
+  { href: "/client/coach", label: "My coach", icon: "user" },
+  { href: "/client/community", label: "Community", icon: "users" },
+  { href: "/profile", label: "Profile", icon: "user-circle" },
 ];
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -24,34 +23,20 @@ export default async function ClientLayout({ children }: { children: React.React
   return (
     <div className="relative min-h-svh">
       <AmbientBackground />
-      <header className="sticky top-0 z-20 px-3 pt-3 sm:px-4">
-        <div className="glass mx-auto flex max-w-6xl flex-col gap-3 rounded-2xl px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Logo className="h-5" />
-              <p className="text-sm font-medium text-muted-foreground">Hi, {user.displayName}</p>
-            </div>
-            <form action={signOutAction} className="sm:hidden">
-              <Button type="submit" variant="ghost" size="sm">Sign out</Button>
-            </form>
-          </div>
-          <nav className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 sm:mx-0 sm:px-0">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="shrink-0 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <form action={signOutAction} className="hidden sm:block">
-            <Button type="submit" variant="ghost" size="sm">Sign out</Button>
+      <DashboardSidebar
+        links={NAV_LINKS}
+        greeting={`Hi, ${user.displayName}`}
+        signOutSlot={
+          <form action={signOutAction}>
+            <Button type="submit" variant="ghost" className="h-11 w-full justify-start px-3 text-muted-foreground">
+              Sign out
+            </Button>
           </form>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl p-4 sm:p-6">{children}</main>
+        }
+      />
+      <div className="md:pl-64">
+        <main className="mx-auto max-w-6xl p-4 sm:p-6">{children}</main>
+      </div>
     </div>
   );
 }

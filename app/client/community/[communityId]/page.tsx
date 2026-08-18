@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { PostForm } from "./post-form";
 import { CommentForm } from "./comment-form";
 import { ReportButton } from "./report-button";
+import { BackButton } from "@/components/back-button";
 
 export default async function CommunityDetailPage({ params }: { params: Promise<{ communityId: string }> }) {
   const { communityId } = await params;
@@ -29,6 +30,7 @@ export default async function CommunityDetailPage({ params }: { params: Promise<
 
   return (
     <div className="mx-auto max-w-xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">{community.name}</h1>
       {community.description && <p className="mt-1 text-sm text-muted-foreground">{community.description}</p>}
       <p className="mt-1 text-xs text-muted-foreground">Posting as {membership.displayAlias} when anonymous.</p>

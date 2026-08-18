@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
+import { FilePicker } from "@/components/file-picker";
 import { updateCoverPhotoAction, type SettingsFormState } from "./actions";
 
 const initialState: SettingsFormState = { status: "idle" };
@@ -20,9 +21,13 @@ export function CoverPhotoForm({ coverPhotoUrl }: { coverPhotoUrl: string | null
           <img src={coverPhotoUrl} alt="" className="size-full object-cover" />
         )}
       </div>
-      <div className="flex items-center gap-3">
-        <input type="file" name="coverPhoto" accept="image/jpeg,image/png,image/webp,image/gif" className="text-xs" />
-        <Button type="submit" size="sm" disabled={isPending} className="rounded-full">
+      <div className="flex flex-wrap items-center gap-3">
+        <FilePicker
+          name="coverPhoto"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          buttonLabel="Choose photo"
+        />
+        <Button type="submit" disabled={isPending} className="min-h-11 rounded-full px-5">
           {isPending ? "Uploading..." : "Update cover photo"}
         </Button>
       </div>

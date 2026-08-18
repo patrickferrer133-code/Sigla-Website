@@ -5,6 +5,7 @@ import { getCoachClientCheckins } from "@/lib/checkins/service";
 import { getActiveNutritionPlanForCoach } from "@/lib/nutrition/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlanForm } from "./plan-form";
+import { BackButton } from "@/components/back-button";
 
 const APPROACH_LABEL: Record<string, string> = {
   habit_based: "Habit-based",
@@ -26,6 +27,7 @@ export default async function CoachClientNutritionPage({ params }: { params: Pro
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">{access.data.clientDisplayName} — nutrition</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         General guidance only — not medical nutrition therapy. Refer out for any diagnosed condition.

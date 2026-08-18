@@ -4,6 +4,7 @@ import { getClientProfileIdForUser, getSessionPageData } from "@/lib/logging/ser
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SetLogRow } from "./set-log-row";
 import { CompleteSessionForm } from "./complete-session-form";
+import { BackButton } from "@/components/back-button";
 
 export default async function SessionLoggerPage({
   params,
@@ -21,6 +22,7 @@ export default async function SessionLoggerPage({
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackButton className="mb-4 self-start" />
       <h1 className="text-2xl font-semibold">{detail.sessionName}</h1>
 
       <div className="mt-6 flex flex-col gap-4">
