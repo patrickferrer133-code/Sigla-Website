@@ -2,6 +2,8 @@ import Link from "next/link";
 import { discoverFiltersSchema } from "@/lib/marketplace/schemas";
 import { searchCoaches } from "@/lib/marketplace/service";
 import { AmbientBackground } from "@/components/ambient-background";
+import { BackButton } from "@/components/back-button";
+import { Logo } from "@/components/logo";
 
 export default async function DiscoverPage({
   searchParams,
@@ -22,6 +24,10 @@ export default async function DiscoverPage({
     <div className="relative min-h-svh">
       <AmbientBackground />
       <div className="mx-auto max-w-2xl px-4 py-16">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <BackButton />
+          <Logo className="h-6" />
+        </div>
         <h1 className="text-3xl font-semibold tracking-tight">Discover a coach</h1>
         <p className="mt-2 text-sm text-muted-foreground">Search by goal, specialty, mode, or city.</p>
 
