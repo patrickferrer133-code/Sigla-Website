@@ -7,6 +7,16 @@ export const createPostSchema = z.object({
 });
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 
+// A user-created community is never `clients_only` — that policy only means
+// something for a coach's own client space. `request` is the default so a new
+// group is not silently open to the whole platform.
+export const createCommunitySchema = z.object({
+  name: z.string().trim().min(3).max(80),
+  description: z.string().trim().max(500).optional(),
+  joinPolicy: z.enum(["open", "request"]).default("request"),
+});
+export type CreateCommunityInput = z.infer<typeof createCommunitySchema>;
+
 export const createCommentSchema = z.object({
   postId: z.string().uuid(),
   bodyMd: z.string().trim().min(1).max(2000),

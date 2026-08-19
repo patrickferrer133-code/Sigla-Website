@@ -38,12 +38,24 @@ export type PostMedia = { type: "image" | "video"; url: string };
 // Public bucket (post-media): self-authored social content, not a progress
 // photo — CLAUDE.md rule 3 (private keys + signed URLs only) applies to
 // progress photos in the check-in/tracking sense, which are stored on a
-// separate private path and never routed through here. `ownerId` is the
-// coach profile id or the client profile id depending on the author; it is
-// only a storage path prefix, never an authorization boundary.
-export async function uploadPostMedia(ownerId: string, file: File): Promise<ContentResult<PostMedia>> {
+// separate private path and never routed through here.
+//
+// `pathPrefix` is only a storage path prefix, never an authorization
+// boundary. For coach and client posts it is the coach/client profile id.
+// For community posts it is the COMMUNITY id, deliberately, because the
+// resulting URL is public and an author-derived prefix would identify the
+// author of an anonymous post (CLAUDE.md hard rule 4) — see
+// communityMediaPathPrefix in lib/domain/community-ownership.ts.
+//
+// `imagesOnly` is used by cover-photo uploads so a video is rejected before
+// it is transferred rather than after.
+export async function uploadPostMedia(
+  pathPrefix: string,
+  file: File,
+  opts: { imagesOnly?: boolean } = {},
+): Promise<ContentResult<PostMedia>> {
   const isImage = IMAGE_TYPES.has(file.type);
-  const isVideo = VIDEO_TYPES.has(file.type);
+  const isVideo = VIDEO_TYPES.has(file.type) && !opts.imagesOnly;
   if (!isImage && !isVideo) return fail({ code: "unsupported_file_type" });
 
   const maxMb = isImage ? MAX_IMAGE_MB : MAX_VIDEO_MB;
@@ -67,7 +79,9 @@ export async function uploadPostMedia(ownerId: string, file: File): Promise<Cont
     ext = IMAGE_EXTENSION[mime];
   }
 
-  const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
+  // Only the extension is taken from the uploaded file name; the original
+  // name (which can itself identify a person) never reaches the bucket.
+  const path = `${pathPrefix}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from(POST_MEDIA_BUCKET).upload(path, body, {
     contentType: file.type,
     upsert: false,

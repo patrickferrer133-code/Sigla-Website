@@ -13,6 +13,7 @@ const NAV_LINKS: NavLink[] = [
   { href: "/coach/programs", label: "Programs", icon: "clipboard" },
   { href: "/coach/checkins", label: "Check-ins", icon: "check-circle" },
   { href: "/coach/messages", label: "Messages", icon: "message-circle" },
+  { href: "/coach/community", label: "Community", icon: "users" },
   { href: "/coach/billing", label: "Billing", icon: "credit-card" },
   { href: "/coach/team", label: "Team", icon: "users" },
   { href: "/coach/settings", label: "Settings", icon: "settings" },

@@ -2,7 +2,12 @@ import { requireRole } from "@/lib/auth/require-role";
 import { listOpenReports, getReportedContentBody } from "@/lib/community/service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { resolveReportAction, takeDownPostAction } from "./actions";
+import {
+  resolveReportAction,
+  takeDownCommunityCommentAction,
+  takeDownCommunityPostAction,
+  takeDownPostAction,
+} from "./actions";
 import { BackButton } from "@/components/back-button";
 import { REPORT_REASON_LABEL } from "@/lib/community/report-reasons";
 
@@ -23,7 +28,7 @@ export default async function ModerationQueuePage() {
 
   const reports = await listOpenReports();
   const reportsWithContent = await Promise.all(
-    reports.map(async (report) => ({ report, body: await getReportedContentBody(report.targetType, report.targetId) })),
+    reports.map(async (report) => ({ report, content: await getReportedContentBody(report.targetType, report.targetId) })),
   );
 
   return (
@@ -35,7 +40,7 @@ export default async function ModerationQueuePage() {
       </p>
 
       <div className="mt-6 flex flex-col gap-4">
-        {reportsWithContent.map(({ report, body }) => (
+        {reportsWithContent.map(({ report, content }) => (
           <Card key={report.id} className={report.reason === "self_harm_risk" ? "border-destructive/60 bg-destructive/5" : ""}>
             <CardHeader>
               <CardTitle className="flex items-baseline justify-between text-base">
@@ -47,9 +52,20 @@ export default async function ModerationQueuePage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
               <p className="whitespace-pre-line rounded-md border bg-background p-3 text-muted-foreground">
-                {body ?? "(content no longer available)"}
+                {content.body ?? "(content no longer available)"}
               </p>
-              <div className="flex gap-2">
+
+              {/* The reported media itself. A caption alone is not enough to
+                  decide a takedown on a reported photo or video. */}
+              {content.media?.type === "image" && (
+                // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL
+                <img src={content.media.url} alt="" className="w-full rounded-md border object-cover" />
+              )}
+              {content.media?.type === "video" && (
+                <video src={content.media.url} controls playsInline preload="metadata" className="w-full rounded-md border" />
+              )}
+
+              <div className="flex flex-wrap gap-2">
                 <form action={resolveReportAction.bind(null, report.id, "dismissed")}>
                   <Button type="submit" variant="ghost" size="sm">Dismiss</Button>
                 </form>
@@ -60,6 +76,20 @@ export default async function ModerationQueuePage() {
                   <form action={takeDownPostAction.bind(null, report.id, report.targetId)}>
                     <Button type="submit" size="sm" variant="destructive">
                       Take down post
+                    </Button>
+                  </form>
+                )}
+                {report.targetType === "community_post" && (
+                  <form action={takeDownCommunityPostAction.bind(null, report.id, report.targetId)}>
+                    <Button type="submit" size="sm" variant="destructive">
+                      Take down post
+                    </Button>
+                  </form>
+                )}
+                {report.targetType === "community_comment" && (
+                  <form action={takeDownCommunityCommentAction.bind(null, report.id, report.targetId)}>
+                    <Button type="submit" size="sm" variant="destructive">
+                      Take down comment
                     </Button>
                   </form>
                 )}

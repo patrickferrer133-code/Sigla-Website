@@ -47,16 +47,43 @@ export const coachPosts = pgTable("coach_posts", {
   index("coach_posts_client_id_idx").on(table.clientId),
 ]);
 
+// Ownership mirrors the coach_posts author pattern: nullable owner_coach_id /
+// owner_client_id plus a non-null owner_role discriminator, with a CHECK
+// constraint (raw SQL in the migration — Drizzle does not generate CHECK
+// constraints) enforcing consistency.
+//
+// `global_goal` communities are platform-owned and have no owner profile at
+// all, which is why the CHECK carves them out rather than demanding exactly
+// one owner on every row.
+//
+// `kind` gains `user_created` rather than reusing `coach_private`:
+// coach_private carries lazily-provisioned, clients_only semantics
+// (getOrCreateCoachCommunity, listCoachCommunitiesForClient) and a
+// coach-created group would otherwise be swept into a client's "your coach's
+// community" list.
 export const communities = pgTable("communities", {
   id: idColumn(),
-  kind: text("kind", { enum: ["global_goal", "coach_private"] }).notNull(),
+  kind: text("kind", { enum: ["global_goal", "coach_private", "user_created"] }).notNull(),
   ownerCoachId: uuid("owner_coach_id").references(() => coachProfiles.id),
+  ownerClientId: uuid("owner_client_id").references(() => clientProfiles.id),
+  ownerRole: text("owner_role", { enum: ["coach", "client"] })
+    .notNull()
+    .default("coach"),
   name: text("name").notNull(),
   description: text("description"),
   goalTag: text("goal_tag"),
   joinPolicy: text("join_policy", { enum: ["open", "request", "clients_only"] }).notNull(),
+  // Public bucket URL, same treatment as coach_profiles.cover_photo_url. Null
+  // renders the default gradient.
+  coverPhotoUrl: text("cover_photo_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// `owner` exists because a community owner may be a client, and
+// `coach_moderator` is coach-specific by name and by intent (docs/06 section 5
+// lists trusted member and coach moderator as distinct roles). `pending` is a
+// requested-but-not-yet-approved membership for a `request` join policy — it
+// is NOT a membership for any read or write gate; only `member` and above are.
 export const communityMemberships = pgTable("community_memberships", {
   communityId: uuid("community_id")
     .notNull()
@@ -64,7 +91,7 @@ export const communityMemberships = pgTable("community_memberships", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id),
-  role: text("role", { enum: ["member", "trusted", "coach_moderator", "admin"] })
+  role: text("role", { enum: ["pending", "member", "trusted", "coach_moderator", "owner", "admin"] })
     .notNull()
     .default("member"),
   displayAlias: text("display_alias").notNull(),
@@ -83,7 +110,10 @@ export const communityPosts = pgTable("community_posts", {
     .notNull()
     .references(() => users.id),
   bodyMd: text("body_md").notNull(),
-  media: jsonb("media"),
+  // Same typed shape as coach_posts.media. The stored URL must never encode
+  // the author (the storage path is prefixed by community id, not by user id)
+  // or hard rule 4 would leak through the media URL of an anonymous post.
+  media: jsonb("media").$type<{ type: "image" | "video"; url: string } | null>(),
   isAnonymous: boolean("is_anonymous").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
